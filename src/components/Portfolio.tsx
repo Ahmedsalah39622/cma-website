@@ -141,7 +141,14 @@ export default function Portfolio() {
     // Helper to get embed URL
     const getEmbedUrl = (url: string, type: string) => {
         if (type === 'youtube') {
-            const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('/').pop();
+            let videoId = '';
+            if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1]?.split('?')[0];
+            } else if (url.includes('v=')) {
+                videoId = url.split('v=')[1]?.split('&')[0];
+            } else {
+                videoId = url.split('/').pop() || '';
+            }
             return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         }
         if (type === 'instagram') {
@@ -152,6 +159,36 @@ export default function Portfolio() {
             return `${cleanUrl}embed`;
         }
         return url;
+    };
+
+    // Helper to get YouTube ID
+    const getYoutubeId = (url: string) => {
+        try {
+            // Handle standard watch URLs (v=...)
+            if (url.includes('v=')) {
+                return url.split('v=')[1]?.split('&')[0];
+            }
+            // Handle youtu.be short links
+            if (url.includes('youtu.be/')) {
+                return url.split('youtu.be/')[1]?.split('?')[0];
+            }
+            // Handle Shorts URLs
+            if (url.includes('/shorts/')) {
+                return url.split('/shorts/')[1]?.split('?')[0];
+            }
+            // Handle Embed URLs
+            if (url.includes('/embed/')) {
+                return url.split('/embed/')[1]?.split('?')[0];
+            }
+
+            // Fallback: Remove query params and take the last segment
+            // This handles generic cases but is riskier, so we rely on specific patterns first
+            const cleanUrl = url.split('?')[0];
+            return cleanUrl.split('/').pop() || '';
+        } catch (e) {
+            console.error('Error extracting YouTube ID:', e);
+            return '';
+        }
     };
 
     return (
@@ -216,7 +253,7 @@ export default function Portfolio() {
                         <div
                             ref={trackRef}
                             onScroll={onScroll}
-                            className="carousel-track mt-6 lg:mt-0"
+                            className="carousel-track mt-6 lg:mt-0 flex items-center" // Added items-center for vertical alignment
                         >
                             {!isLoaded ? (
                                 // Skeleton loading placeholders
@@ -234,103 +271,136 @@ export default function Portfolio() {
                                 </div>
                             ) : (
                                 // Portfolio Cards
-                                filteredProjects.map((project, idx) => (
-                                    <div
-                                        key={project.id}
-                                        className={`portfolio-card flex-shrink-0 ${activeIndex === idx ? 'active' : 'inactive'}`}
-                                        onClick={() => handleCardClick(project, idx)}
-                                    >
-                                        <div className="w-[280px] h-[280px] lg:w-[380px] lg:h-[400px] rounded-[24px] lg:rounded-[30px] relative overflow-hidden group cursor-pointer transition-all duration-300">
-                                            {/* Background Image or Gradient */}
-                                            <div className="absolute inset-0">
-                                                {project.image ? (
-                                                    <img
-                                                        src={project.image}
-                                                        alt={project.title}
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        loading="lazy"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gradient-to-br from-[#E8E8E8] to-[#D5D5D5]" />
-                                                )}
-                                            </div>
+                                filteredProjects.map((project, idx) => {
+                                    // Determine dimensions based on video type (Reel vs Normal)
+                                    const isReel = project.videoType === 'instagram';
+                                    const cardDimensions = isReel
+                                        ? 'w-[280px] h-[480px] lg:w-[320px] lg:h-[560px]' // Vertical Reel format
+                                        : 'w-[280px] h-[280px] lg:w-[380px] lg:h-[400px]'; // Standard Square/Rect format
 
-                                            {/* Overlay gradient for text readability */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                    // Auto-Thumbnail Logic
+                                    let displayImage = project.image;
+                                    if (!displayImage && project.videoType === 'youtube' && project.videoUrl) {
+                                        const ytid = getYoutubeId(project.videoUrl);
+                                        if (ytid) {
+                                            displayImage = `https://img.youtube.com/vi/${ytid}/maxresdefault.jpg`;
+                                        }
+                                    }
 
-                                            {/* Border */}
-                                            <div className="absolute inset-0 rounded-[24px] lg:rounded-[30px] border-[8px] lg:border-[10px] border-white/20"></div>
-
-                                            {/* Play Button Overlay (if video) */}
-                                            {project.videoUrl && (
-                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:scale-110 transition-transform duration-300">
-                                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
-                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" className="ml-1">
-                                                            <path d="M8 5v14l11-7z" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Company Label */}
-                                            <div className="absolute top-6 lg:top-8 left-6 lg:left-8 flex items-center gap-3 z-10 w-full pr-16 text-left">
-                                                <div className="w-[40px] lg:w-[54px] h-[1px] bg-white/50 shrink-0"></div>
-                                                <span className="text-white/90 font-semibold text-xs lg:text-sm tracking-[-0.02em] whitespace-nowrap overflow-hidden text-ellipsis">
-                                                    {project.company}. {project.year}
-                                                </span>
-                                            </div>
-
-                                            {/* Category Badge */}
-                                            <div className="absolute top-6 lg:top-8 right-6 lg:right-8 z-10">
-                                                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-xs font-medium">
-                                                    {project.category}
-                                                </span>
-                                            </div>
-
-                                            {/* Title */}
-                                            <div className="absolute bottom-6 lg:bottom-8 left-6 lg:left-8 right-6 lg:right-8 z-10">
-                                                <h3 className="text-white font-semibold text-lg lg:text-xl leading-[1.35] mb-2 pr-8 text-left">
-                                                    {project.title}
-                                                </h3>
-                                                {project.description && (
-                                                    <p className="text-white/60 text-sm mb-3 line-clamp-2 text-left">
-                                                        {project.description}
-                                                    </p>
-                                                )}
-
-                                                {/* Social Links Row */}
-                                                <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                                                    {(project.socialLinks || []).map((link, i) => (
-                                                        <a
-                                                            key={i}
-                                                            href={link.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80 hover:bg-white/20 hover:text-[#FFD700] transition-colors"
-                                                            title={link.type}
-                                                        >
-                                                            <SocialIcon type={link.type} />
-                                                        </a>
-                                                    ))}
-                                                    {/* External Link Indicator if present */}
-                                                    {!project.videoUrl && project.link && (
-                                                        <div className="flex items-center gap-2 text-[#FFD700] text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <span>View Project</span>
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                                                                <polyline points="15 3 21 3 21 9" />
-                                                                <line x1="10" y1="14" x2="21" y2="3" />
-                                                            </svg>
-                                                        </div>
+                                    return (
+                                        <div
+                                            key={project.id}
+                                            className={`portfolio-card flex-shrink-0 ${activeIndex === idx ? 'active' : 'inactive'}`}
+                                            onClick={() => handleCardClick(project, idx)}
+                                        >
+                                            <div className={`${cardDimensions} rounded-[24px] lg:rounded-[30px] relative overflow-hidden group cursor-pointer transition-all duration-300`}>
+                                                {/* Background Image or Gradient */}
+                                                <div className="absolute inset-0">
+                                                    {displayImage ? (
+                                                        <img
+                                                            src={displayImage}
+                                                            alt={project.title}
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                            loading="lazy"
+                                                            onError={(e) => {
+                                                                // Fallback if maxresdefault doesn't exist (e.g. older videos)
+                                                                const target = e.target as HTMLImageElement;
+                                                                if (target.src.includes('maxresdefault')) {
+                                                                    target.src = target.src.replace('maxresdefault', 'hqdefault');
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-gradient-to-br from-[#E8E8E8] to-[#D5D5D5]" />
                                                     )}
                                                 </div>
-                                            </div>
 
-                                            {/* Hover Effect */}
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-[24px] lg:rounded-[30px]"></div>
+                                                {/* Overlay gradient for text readability */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                                                {/* Border */}
+                                                <div className="absolute inset-0 rounded-[24px] lg:rounded-[30px] border-[8px] lg:border-[10px] border-white/20"></div>
+
+                                                {/* Play Button Overlay (if video) */}
+                                                {project.videoUrl && (
+                                                    <div
+                                                        className="absolute inset-0 flex items-center justify-center z-20 group-hover:scale-110 transition-transform duration-300"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent centering click
+                                                            setSelectedVideo({
+                                                                url: project.videoUrl!,
+                                                                type: (project.videoType as 'youtube' | 'instagram' | 'mp4') || 'youtube'
+                                                            });
+                                                        }}
+                                                    >
+                                                        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-colors cursor-pointer">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white" className="ml-1">
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Company Label */}
+                                                <div className="absolute top-6 lg:top-8 left-6 lg:left-8 flex items-center gap-3 z-10 w-full pr-16 text-left">
+                                                    <div className="w-[40px] lg:w-[54px] h-[1px] bg-white/50 shrink-0"></div>
+                                                    <span className="text-white/90 font-semibold text-xs lg:text-sm tracking-[-0.02em] whitespace-nowrap overflow-hidden text-ellipsis">
+                                                        {project.company}. {project.year}
+                                                    </span>
+                                                </div>
+
+                                                {/* Category Badge */}
+                                                <div className="absolute top-6 lg:top-8 right-6 lg:right-8 z-10">
+                                                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-xs font-medium">
+                                                        {project.category}
+                                                    </span>
+                                                </div>
+
+                                                {/* Title */}
+                                                <div className="absolute bottom-6 lg:bottom-8 left-6 lg:left-8 right-6 lg:right-8 z-10">
+                                                    <h3 className="text-white font-semibold text-lg lg:text-xl leading-[1.35] mb-2 pr-8 text-left">
+                                                        {project.title}
+                                                    </h3>
+                                                    {project.description && (
+                                                        <p className="text-white/60 text-sm mb-3 line-clamp-2 text-left">
+                                                            {project.description}
+                                                        </p>
+                                                    )}
+
+                                                    {/* Social Links Row */}
+                                                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                                        {(project.socialLinks || []).map((link, i) => (
+                                                            <a
+                                                                key={i}
+                                                                href={link.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80 hover:bg-white/20 hover:text-[#FFD700] transition-colors"
+                                                                title={link.type}
+                                                            >
+                                                                <SocialIcon type={link.type} />
+                                                            </a>
+                                                        ))}
+                                                        {/* External Link Indicator if present */}
+                                                        {!project.videoUrl && project.link && (
+                                                            <div className="flex items-center gap-2 text-[#FFD700] text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <span>View Project</span>
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                                                                    <polyline points="15 3 21 3 21 9" />
+                                                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                                                </svg>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Hover Effect */}
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-[24px] lg:rounded-[30px]"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
 
@@ -359,42 +429,49 @@ export default function Portfolio() {
                         </div>
                     </div>
                 </ScrollReveal>
+            </div>
 
-                {/* Video Modal */}
-                {selectedVideo && (
-                    <div
-                        className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 lg:p-12 animate-fade-in"
+            {/* Video Modal - Moved Outside to prevent clipping */}
+            {selectedVideo && (
+                <div
+                    className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 lg:p-12 animate-fade-in"
+                    onClick={() => setSelectedVideo(null)}
+                >
+                    <button
+                        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-[110]"
                         onClick={() => setSelectedVideo(null)}
                     >
-                        <button
-                            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-50"
-                            onClick={() => setSelectedVideo(null)}
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M18 6L6 18M6 6l12 12" />
-                            </svg>
-                        </button>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
 
-                        <div className="w-full max-w-6xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl relative" onClick={e => e.stopPropagation()}>
-                            {selectedVideo.type === 'mp4' ? (
-                                <video
-                                    src={selectedVideo.url}
-                                    controls
-                                    autoPlay
-                                    className="w-full h-full object-contain"
-                                />
-                            ) : (
-                                <iframe
-                                    src={getEmbedUrl(selectedVideo.url, selectedVideo.type)}
-                                    className="w-full h-full"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            )}
-                        </div>
+                    <div
+                        className={`relative bg-black rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center
+                            ${selectedVideo.type === 'instagram'
+                                ? 'h-[85vh] aspect-[9/16]'
+                                : 'w-full max-w-6xl aspect-video'
+                            }`}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {selectedVideo.type === 'mp4' ? (
+                            <video
+                                src={selectedVideo.url}
+                                controls
+                                autoPlay
+                                className="w-full h-full object-contain max-h-[85vh]"
+                            />
+                        ) : (
+                            <iframe
+                                src={getEmbedUrl(selectedVideo.url, selectedVideo.type)}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        )}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </section>
     );
 }

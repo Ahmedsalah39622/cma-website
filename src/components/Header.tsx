@@ -126,12 +126,7 @@ const Header = () => {
                 </svg>
               </Link>
 
-              {/* Bell Button */}
-              <button className="hidden md:flex w-[44px] h-[44px] bg-white rounded-full items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 shadow-sm group">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" className="group-hover:stroke-black transition-colors">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+
 
               {/* Mobile Menu Toggle */}
               <button
