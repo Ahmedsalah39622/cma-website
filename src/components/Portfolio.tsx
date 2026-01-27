@@ -3,7 +3,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
 import GeometricBackground from './GeometricBackground';
-import { usePortfolio } from '@/context/PortfolioContext';
+import { usePortfolio, PortfolioItem } from '@/context/PortfolioContext';
+
+// Social Icon Components
+const SocialIcon = ({ type }: { type: string }) => {
+    switch (type) {
+        case 'youtube':
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.33A29 29 0 0022.54 6.42zM9.75 15.02l5.75-3.27-5.75-3.27v6.54z" /></svg>;
+        case 'instagram':
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>;
+        case 'twitter':
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>;
+        case 'linkedin':
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>;
+        case 'facebook':
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>;
+        default:
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>;
+    }
+};
 
 export default function Portfolio() {
     const { items, categories, isLoaded } = usePortfolio();
@@ -11,6 +29,7 @@ export default function Portfolio() {
     const trackRef = useRef<HTMLDivElement | null>(null);
     const [progress, setProgress] = useState(0);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [selectedVideo, setSelectedVideo] = useState<{ url: string; type: 'youtube' | 'instagram' | 'mp4' } | null>(null);
 
     // Filter projects based on active category
     const filteredProjects = activeCategory === 'All Work'
@@ -101,6 +120,40 @@ export default function Portfolio() {
         }, 80);
     }, [activeCategory]);
 
+    const handleCardClick = (project: PortfolioItem, index: number) => {
+        // If not active, center it first
+        if (index !== activeIndex) {
+            centerItemAt(index);
+            return;
+        }
+
+        // Logic for active card interaction
+        if (project.videoUrl) {
+            setSelectedVideo({
+                url: project.videoUrl,
+                type: (project.videoType as 'youtube' | 'instagram' | 'mp4') || 'youtube'
+            });
+        } else if (project.link) {
+            window.open(project.link, '_blank');
+        }
+    };
+
+    // Helper to get embed URL
+    const getEmbedUrl = (url: string, type: string) => {
+        if (type === 'youtube') {
+            const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('/').pop();
+            return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        }
+        if (type === 'instagram') {
+            // Check if it's already an embed URL
+            if (url.includes('/embed')) return url;
+            // Ensure trailing slash for consistent parsing
+            const cleanUrl = url.endsWith('/') ? url : `${url}/`;
+            return `${cleanUrl}embed`;
+        }
+        return url;
+    };
+
     return (
         <section id="portfolio" className="py-8 lg:py-12 section-wrapper section-offset-xl">
             <div className="mx-4 card card-dark rounded-[30px] relative overflow-hidden">
@@ -185,7 +238,7 @@ export default function Portfolio() {
                                     <div
                                         key={project.id}
                                         className={`portfolio-card flex-shrink-0 ${activeIndex === idx ? 'active' : 'inactive'}`}
-                                        onClick={() => centerItemAt(idx)}
+                                        onClick={() => handleCardClick(project, idx)}
                                     >
                                         <div className="w-[280px] h-[280px] lg:w-[380px] lg:h-[400px] rounded-[24px] lg:rounded-[30px] relative overflow-hidden group cursor-pointer transition-all duration-300">
                                             {/* Background Image or Gradient */}
@@ -203,15 +256,26 @@ export default function Portfolio() {
                                             </div>
 
                                             {/* Overlay gradient for text readability */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                                             {/* Border */}
                                             <div className="absolute inset-0 rounded-[24px] lg:rounded-[30px] border-[8px] lg:border-[10px] border-white/20"></div>
 
+                                            {/* Play Button Overlay (if video) */}
+                                            {project.videoUrl && (
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:scale-110 transition-transform duration-300">
+                                                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" className="ml-1">
+                                                            <path d="M8 5v14l11-7z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Company Label */}
-                                            <div className="absolute top-6 lg:top-8 left-6 lg:left-8 flex items-center gap-3 z-10">
-                                                <div className="w-[40px] lg:w-[54px] h-[1px] bg-white/50"></div>
-                                                <span className="text-white/90 font-semibold text-xs lg:text-sm tracking-[-0.02em]">
+                                            <div className="absolute top-6 lg:top-8 left-6 lg:left-8 flex items-center gap-3 z-10 w-full pr-16 text-left">
+                                                <div className="w-[40px] lg:w-[54px] h-[1px] bg-white/50 shrink-0"></div>
+                                                <span className="text-white/90 font-semibold text-xs lg:text-sm tracking-[-0.02em] whitespace-nowrap overflow-hidden text-ellipsis">
                                                     {project.company}. {project.year}
                                                 </span>
                                             </div>
@@ -225,14 +289,41 @@ export default function Portfolio() {
 
                                             {/* Title */}
                                             <div className="absolute bottom-6 lg:bottom-8 left-6 lg:left-8 right-6 lg:right-8 z-10">
-                                                <h3 className="text-white font-semibold text-lg lg:text-xl leading-[1.35]">
+                                                <h3 className="text-white font-semibold text-lg lg:text-xl leading-[1.35] mb-2 pr-8 text-left">
                                                     {project.title}
                                                 </h3>
                                                 {project.description && (
-                                                    <p className="text-white/60 text-sm mt-2 line-clamp-2">
+                                                    <p className="text-white/60 text-sm mb-3 line-clamp-2 text-left">
                                                         {project.description}
                                                     </p>
                                                 )}
+
+                                                {/* Social Links Row */}
+                                                <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                                    {(project.socialLinks || []).map((link, i) => (
+                                                        <a
+                                                            key={i}
+                                                            href={link.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80 hover:bg-white/20 hover:text-[#FFD700] transition-colors"
+                                                            title={link.type}
+                                                        >
+                                                            <SocialIcon type={link.type} />
+                                                        </a>
+                                                    ))}
+                                                    {/* External Link Indicator if present */}
+                                                    {!project.videoUrl && project.link && (
+                                                        <div className="flex items-center gap-2 text-[#FFD700] text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <span>View Project</span>
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                                                                <polyline points="15 3 21 3 21 9" />
+                                                                <line x1="10" y1="14" x2="21" y2="3" />
+                                                            </svg>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Hover Effect */}
@@ -268,6 +359,41 @@ export default function Portfolio() {
                         </div>
                     </div>
                 </ScrollReveal>
+
+                {/* Video Modal */}
+                {selectedVideo && (
+                    <div
+                        className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 lg:p-12 animate-fade-in"
+                        onClick={() => setSelectedVideo(null)}
+                    >
+                        <button
+                            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-50"
+                            onClick={() => setSelectedVideo(null)}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="w-full max-w-6xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl relative" onClick={e => e.stopPropagation()}>
+                            {selectedVideo.type === 'mp4' ? (
+                                <video
+                                    src={selectedVideo.url}
+                                    controls
+                                    autoPlay
+                                    className="w-full h-full object-contain"
+                                />
+                            ) : (
+                                <iframe
+                                    src={getEmbedUrl(selectedVideo.url, selectedVideo.type)}
+                                    className="w-full h-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
     );

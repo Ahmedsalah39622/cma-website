@@ -10,6 +10,10 @@ export interface PortfolioItem {
     image: string;
     year: string;
     description?: string;
+    link?: string;
+    socialLinks?: { type: 'youtube' | 'instagram' | 'twitter' | 'linkedin' | 'facebook'; url: string }[];
+    videoUrl?: string;
+    videoType?: 'youtube' | 'instagram' | 'mp4';
 }
 
 interface PortfolioContextType {

@@ -12,6 +12,20 @@ const categoryOptions = [
     'Video Production',
 ];
 
+const videoTypeOptions = [
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'mp4', label: 'Direct MP4' },
+];
+
+const socialTypeOptions = [
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'twitter', label: 'X (Twitter)' },
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'facebook', label: 'Facebook' },
+];
+
 interface FormData {
     title: string;
     company: string;
@@ -19,6 +33,10 @@ interface FormData {
     image: string;
     year: string;
     description: string;
+    link: string;
+    videoUrl: string;
+    videoType: 'youtube' | 'instagram' | 'mp4';
+    socialLinks: { type: string; url: string }[];
 }
 
 const emptyForm: FormData = {
@@ -28,6 +46,10 @@ const emptyForm: FormData = {
     image: '',
     year: new Date().getFullYear().toString(),
     description: '',
+    link: '',
+    videoUrl: '',
+    videoType: 'youtube',
+    socialLinks: [],
 };
 
 // Max image size (500KB after compression for fast localStorage)
@@ -126,11 +148,22 @@ export default function AdminPortfolioPage() {
             return;
         }
 
+        // Clean up data for submission
+        const submissionData = {
+            ...formData,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            socialLinks: formData.socialLinks.filter(l => l.url) as any,
+            // Only include video params if URL exists
+            videoUrl: formData.videoUrl || undefined,
+            videoType: formData.videoUrl ? formData.videoType : undefined,
+            link: formData.link || undefined,
+        };
+
         if (editingId) {
-            updateItem(editingId, formData);
+            updateItem(editingId, submissionData);
             setEditingId(null);
         } else {
-            addItem(formData);
+            addItem(submissionData);
         }
 
         setFormData(emptyForm);
@@ -145,6 +178,11 @@ export default function AdminPortfolioPage() {
             image: item.image,
             year: item.year,
             description: item.description || '',
+            link: item.link || '',
+            videoUrl: item.videoUrl || '',
+            videoType: item.videoType || 'youtube',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            socialLinks: item.socialLinks || [] as any,
         });
         setEditingId(item.id);
         setShowForm(true);
@@ -166,6 +204,27 @@ export default function AdminPortfolioPage() {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+    };
+
+    // Social Links Management
+    const addSocialLink = () => {
+        setFormData({
+            ...formData,
+            socialLinks: [...formData.socialLinks, { type: 'youtube', url: '' }]
+        });
+    };
+
+    const removeSocialLink = (index: number) => {
+        const newLinks = [...formData.socialLinks];
+        newLinks.splice(index, 1);
+        setFormData({ ...formData, socialLinks: newLinks });
+    };
+
+    const updateSocialLink = (index: number, field: 'type' | 'url', value: string) => {
+        const newLinks = [...formData.socialLinks];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        newLinks[index] = { ...newLinks[index], [field]: value } as any;
+        setFormData({ ...formData, socialLinks: newLinks });
     };
 
     if (!isLoaded) {
@@ -219,9 +278,9 @@ export default function AdminPortfolioPage() {
                         className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-6"
                         onClick={(e) => e.target === e.currentTarget && handleCancel()}
                     >
-                        <div className="bg-[#141414] border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl shadow-black/50 overflow-hidden">
+                        <div className="bg-[#141414] border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl shadow-black/50 overflow-hidden flex flex-col max-h-[90vh]">
                             {/* Modal Header */}
-                            <div className="p-8 border-b border-white/10 bg-gradient-to-r from-[#1a1a1a] to-[#141414]">
+                            <div className="p-8 border-b border-white/10 bg-gradient-to-r from-[#1a1a1a] to-[#141414] flex-shrink-0">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-2xl font-bold text-white">
                                         {editingId ? 'Edit Project' : 'Add New Project'}
@@ -238,7 +297,7 @@ export default function AdminPortfolioPage() {
                             </div>
 
                             {/* Modal Body */}
-                            <form onSubmit={handleSubmit} className="p-8 space-y-8 max-h-[60vh] overflow-y-auto">
+                            <form onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-grow custom-scrollbar">
                                 {/* Title */}
                                 <div className="space-y-3">
                                     <label className="block text-white text-sm font-semibold uppercase tracking-wider">
@@ -396,6 +455,107 @@ export default function AdminPortfolioPage() {
                                     />
                                 </div>
 
+                                {/* Link */}
+                                <div className="space-y-3">
+                                    <label className="block text-white text-sm font-semibold uppercase tracking-wider">
+                                        Project Link (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.link}
+                                        onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                                        placeholder="https://project-url.com"
+                                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-lg placeholder:text-white/30 focus:outline-none focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                                    />
+                                </div>
+
+                                {/* Video Section */}
+                                <div className="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <h3 className="text-white font-bold text-lg">Video Integration</h3>
+
+                                    <div className="space-y-3">
+                                        <label className="block text-white text-sm font-semibold uppercase tracking-wider">
+                                            Video Type
+                                        </label>
+                                        <div className="flex bg-white/5 p-1 rounded-xl">
+                                            {videoTypeOptions.map((type) => (
+                                                <button
+                                                    key={type.value}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, videoType: type.value as any })}
+                                                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${formData.videoType === type.value
+                                                        ? 'bg-[#FFD700] text-black shadow-lg'
+                                                        : 'text-white/50 hover:text-white'
+                                                        }`}
+                                                >
+                                                    {type.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="block text-white text-sm font-semibold uppercase tracking-wider">
+                                            Video URL
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.videoUrl}
+                                            onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                                            placeholder={formData.videoType === 'youtube' ? 'https://youtube.com/watch?v=...' : formData.videoType === 'instagram' ? 'https://instagram.com/reel/...' : 'https://example.com/video.mp4'}
+                                            className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-lg placeholder:text-white/30 focus:outline-none focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Social Links Section */}
+                                <div className="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-white font-bold text-lg">Social Media Config</h3>
+                                        <button
+                                            type="button"
+                                            onClick={addSocialLink}
+                                            className="px-3 py-1.5 bg-[#FFD700]/10 text-[#FFD700] text-sm font-semibold rounded-lg hover:bg-[#FFD700]/20 transition-all"
+                                        >
+                                            + Add Social
+                                        </button>
+                                    </div>
+
+                                    {formData.socialLinks.length === 0 ? (
+                                        <p className="text-white/30 text-sm italic">No social links added.</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {formData.socialLinks.map((link, idx) => (
+                                                <div key={idx} className="flex gap-3">
+                                                    <select
+                                                        value={link.type}
+                                                        onChange={(e) => updateSocialLink(idx, 'type', e.target.value)}
+                                                        className="w-1/3 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]"
+                                                    >
+                                                        {socialTypeOptions.map(opt => (
+                                                            <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">{opt.label}</option>
+                                                        ))}
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        value={link.url}
+                                                        onChange={(e) => updateSocialLink(idx, 'url', e.target.value)}
+                                                        placeholder="Profile Link..."
+                                                        className="flex-1 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSocialLink(idx)}
+                                                        className="px-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Description */}
                                 <div className="space-y-3">
                                     <label className="block text-white text-sm font-semibold uppercase tracking-wider">
@@ -412,7 +572,7 @@ export default function AdminPortfolioPage() {
                             </form>
 
                             {/* Modal Footer */}
-                            <div className="p-8 border-t border-white/10 bg-[#0f0f0f] flex gap-4">
+                            <div className="p-8 border-t border-white/10 bg-[#0f0f0f] flex gap-4 flex-shrink-0">
                                 <button
                                     type="button"
                                     onClick={handleCancel}
@@ -522,6 +682,25 @@ export default function AdminPortfolioPage() {
                                         </span>
                                     </div>
 
+                                    {/* Link & Video Indicators */}
+                                    <div className="absolute top-4 right-4 flex gap-2">
+                                        {item.link && (
+                                            <div className="w-8 h-8 rounded-full bg-black/70 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="2">
+                                                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                                                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        {item.videoUrl && (
+                                            <div className="w-8 h-8 rounded-full bg-black/70 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="none">
+                                                    <path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.33A29 29 0 0022.54 6.42zM9.75 15.02l5.75-3.27-5.75-3.27v6.54z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     {/* Gradient Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 </div>
@@ -529,7 +708,7 @@ export default function AdminPortfolioPage() {
                                 {/* Content */}
                                 <div className="p-6 space-y-4">
                                     <div>
-                                        <h3 className="text-white font-bold text-xl leading-tight mb-2 group-hover:text-[#FFD700] transition-colors">
+                                        <h3 className="text-white font-bold text-xl leading-tight mb-2 group-hover:text-[#FFD700] transition-colors line-clamp-1">
                                             {item.title}
                                         </h3>
                                         <p className="text-white/40 text-sm font-medium">
@@ -537,10 +716,15 @@ export default function AdminPortfolioPage() {
                                         </p>
                                     </div>
 
-                                    {item.description && (
-                                        <p className="text-white/30 text-sm line-clamp-2 leading-relaxed">
-                                            {item.description}
-                                        </p>
+                                    {/* Social Stats */}
+                                    {item.socialLinks && item.socialLinks.length > 0 && (
+                                        <div className="flex gap-2">
+                                            {item.socialLinks.map((link, i) => (
+                                                <div key={i} className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-white/50 text-[10px]">
+                                                    {link.type[0].toUpperCase()}
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
 
                                     {/* Actions */}
