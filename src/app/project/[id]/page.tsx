@@ -52,7 +52,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         allVideos.push(...project.additionalVideos);
     }
 
-    //
+    
     const allImages = [];
     if (project.image) allImages.push(project.image);
     if (project.gallery) allImages.push(...project.gallery);
