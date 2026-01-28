@@ -5,11 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const navLinks = [
-  { name: 'Service', href: '#services', hasDropdown: true },
-  { name: 'Agency', href: '#about', hasDropdown: true },
-  { name: 'Case study', href: '#portfolio', hasDropdown: true },
-  { name: 'Resources', href: '#blog', hasDropdown: true },
-  { name: 'Contact', href: '#contact', hasDropdown: false },
+  { name: 'Service', href: '/#services', hasDropdown: true },
+  { name: 'Agency', href: '/#about', hasDropdown: true },
+  { name: 'Case study', href: '/#portfolio', hasDropdown: true },
+  { name: 'Resources', href: '/#blog', hasDropdown: true },
+  { name: 'Contact', href: '/#contact', hasDropdown: false },
 ];
 
 const Header = () => {

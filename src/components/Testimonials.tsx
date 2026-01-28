@@ -12,7 +12,7 @@ export default function Testimonials() {
 
   if (!isLoaded || testimonials.length === 0) {
     return (
-      <section className="py-24 lg:py-32 bg-[#FAFAFA] section-wrapper relative overflow-hidden">
+      <section className="py-24 lg:py-32 bg-[#FFFFFF] section-wrapper relative overflow-hidden">
         <div className="container-custom">
           {testimonials.length === 0 && isLoaded ? (
             <div className="text-center py-16">
@@ -49,7 +49,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-24 lg:py-32 bg-[#FAFAFA] section-wrapper relative overflow-hidden">
+    <section className="py-24 lg:py-32 bg-[#FFFFFF] section-wrapper relative overflow-hidden">
       <GeometricBackground pattern="circles" position="center" opacity={0.04} className="text-[#020B1C]" />
       <ScrollReveal className="container-custom relative z-10">
         <div className="flex flex-col gap-16 lg:gap-20">

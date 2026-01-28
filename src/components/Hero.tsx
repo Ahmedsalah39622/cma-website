@@ -85,59 +85,7 @@ const Hero = () => {
                             </Link>
                         </div>
 
-                        {/* Trusted By */}
-                        <div className="animate-on-load animate-fade-in-up delay-400 flex flex-wrap items-center gap-8 md:gap-16 mt-8 pt-8 border-t border-gray-100">
-                            <span className="text-[#010205] font-semibold text-sm leading-[1.6] max-w-[150px]">
-                                Trusted by the world&apos;s biggest brands
-                            </span>
-                            <div className="trusted-brands">
-                                {[
-                                    {
-                                        name: 'Facebook', svg: (
-                                            <svg viewBox="0 0 24 24" className="brand-icon" role="img" aria-hidden="true">
-                                                <path fill="#1877F2" d="M22.675 0H1.325C.593 0 0 .593 0 1.326v21.348C0 23.406.593 24 1.325 24H12.82v-9.294H9.692V11.08h3.128V8.414c0-3.1 1.893-4.788 4.657-4.788 1.325 0 2.463.1 2.795.144v3.24l-1.918.001c-1.504 0-1.795.714-1.795 1.762v2.313h3.587l-.467 3.626h-3.12V24h6.116C23.407 24 24 23.406 24 22.674V1.326C24 .593 23.407 0 22.675 0z" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: 'TikTok', svg: (
-                                            <Image src="https://th.bing.com/th/id/OIP.yzq8Fw2yOTB8dZqdvdbNQQHaEn?w=303&h=189&c=7&r=0&o=7&pid=1.7&rm=3" alt="TikTok" width={32} height={32} className="brand-icon" />
-                                        )
-                                    },
-                                    {
-                                        name: 'YouTube', svg: (
-                                            <svg viewBox="0 0 24 24" className="brand-icon" role="img" aria-hidden="true">
-                                                <path d="M23.498 6.186a3.04 3.04 0 0 0-2.14-2.15C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.358.536A3.04 3.04 0 0 0 .502 6.186 31.1 31.1 0 0 0 0 12a31.1 31.1 0 0 0 .502 5.814 3.04 3.04 0 0 0 2.14 2.15C4.4 20.5 12 20.5 12 20.5s7.6 0 9.358-.536a3.04 3.04 0 0 0 2.14-2.15A31.1 31.1 0 0 0 24 12a31.1 31.1 0 0 0-.502-5.814z" fill="#FF0000" />
-                                                <path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#fff" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: 'Google', svg: (
-                                            <svg width="24" height="24" viewBox="0 0 24 24" className="brand-icon" role="img" aria-hidden="true">
-                                                <path fill="#4285F4" d="M21.35 11.1h-9.1v2.8h5.36c-.46 2.17-2.24 3.73-4.6 3.73-2.77 0-5.02-2.22-5.02-4.97 0-2.76 2.25-4.98 5.02-4.98 1.38 0 2.63.52 3.58 1.39l2.03-2.03C16.2 5.4 14.28 4.5 12 4.5 7.6 4.5 4 8.1 4 12.9s3.6 8.4 8 8.4c4.8 0 7.5-3.4 7.5-8.2 0-.55-.05-1.06-.15-1.99z" />
-                                                <path fill="#34A853" d="M6.4 14.8c-.4-1.4-.4-2.9 0-4.3L4.1 8.1C3.2 9.9 2.8 11.9 2.8 13.9c0 2 .4 4 1.3 5.8l2.3-3z" />
-                                                <path fill="#FBBC05" d="M12 4.5c1.4 0 2.7.5 3.7 1.4l-2.7 2.7C13.8 8 13 7.6 12 7.6c-2.6 0-4.8 1.8-5.6 4.2l-2.3-1.8C5 6.9 8.6 4.5 12 4.5z" />
-                                                <path fill="#EA4335" d="M17.6 18.4c-1.1.9-2.6 1.5-4.6 1.5-3.4 0-6.2-2.1-7.3-5.1l-2.3 1.8C5.9 21 9.3 23 13 23c3.9 0 6.9-1.9 8.9-4.6l-4.3-0.0z" />
-                                            </svg>
-                                        )
-                                    },
-                                    {
-                                        name: 'Twitter', svg: (
-                                            <svg viewBox="0 0 24 24" className="brand-icon" role="img" aria-hidden="true">
-                                                <path d="M23 4.56c-.77.34-1.6.57-2.46.67a4.3 4.3 0 0 0 1.88-2.37 8.66 8.66 0 0 1-2.73 1.05 4.31 4.31 0 0 0-7.36 3.93A12.22 12.22 0 0 1 3.15 3.15a4.31 4.31 0 0 0 1.33 5.74 4.27 4.27 0 0 1-1.95-.54v.05a4.31 4.31 0 0 0 3.46 4.22 4.34 4.34 0 0 1-1.95.07 4.32 4.32 0 0 0 4.03 2.99A8.64 8.64 0 0 1 1.5 19.54 12.18 12.18 0 0 0 7.29 21c8.69 0 13.45-7.2 13.45-13.45v-.61A9.6 9.6 0 0 0 23 4.56z" fill="#1DA1F2" />
-                                            </svg>
-                                        )
-                                    }
-                                ].map(b => (
-                                    <div key={b.name} className="brand-item">
-                                        {b.svg}
-                                        <div className="text-2xl font-bold text-black/80">{b.name}</div>
-                                    </div>
-                                ))}
 
-                            </div>
-                        </div>
                     </div>
 
                     {/* Right Content - Cards Grid */}

@@ -37,6 +37,8 @@ interface FormData {
     videoUrl: string;
     videoType: 'youtube' | 'instagram' | 'mp4';
     socialLinks: { type: string; url: string }[];
+    gallery: string[];
+    additionalVideos: { type: 'youtube' | 'instagram' | 'mp4'; url: string }[];
 }
 
 const emptyForm: FormData = {
@@ -50,6 +52,8 @@ const emptyForm: FormData = {
     videoUrl: '',
     videoType: 'youtube',
     socialLinks: [],
+    gallery: [],
+    additionalVideos: [],
 };
 
 // Max image size (500KB after compression for fast localStorage)
@@ -140,6 +144,60 @@ export default function AdminPortfolioPage() {
         });
     };
 
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploading(true);
+        const newImages: string[] = [];
+
+        try {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith('image/')) continue;
+                const base64 = await compressAndConvertToBase64(file);
+                newImages.push(base64);
+            }
+            setFormData(prev => ({ ...prev, gallery: [...prev.gallery, ...newImages] }));
+        } catch (error) {
+            console.error('Error processing gallery images:', error);
+            alert('Error processing some images.');
+        } finally {
+            setIsUploading(false);
+            if (e.target) e.target.value = '';
+        }
+    };
+
+    const removeGalleryImage = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            gallery: prev.gallery.filter((_, i) => i !== index)
+        }));
+    };
+
+    const addAdditionalVideo = () => {
+        setFormData(prev => ({
+            ...prev,
+            additionalVideos: [...prev.additionalVideos, { type: 'youtube', url: '' }]
+        }));
+    };
+
+    const removeAdditionalVideo = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            additionalVideos: prev.additionalVideos.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateAdditionalVideo = (index: number, field: 'type' | 'url', value: string) => {
+        setFormData(prev => {
+            const newVideos = [...prev.additionalVideos];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            newVideos[index] = { ...newVideos[index], [field]: value } as any;
+            return { ...prev, additionalVideos: newVideos };
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -153,6 +211,8 @@ export default function AdminPortfolioPage() {
             ...formData,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             socialLinks: formData.socialLinks.filter(l => l.url) as any,
+            gallery: formData.gallery,
+            additionalVideos: formData.additionalVideos.filter(v => v.url) as any,
             // Only include video params if URL exists
             videoUrl: formData.videoUrl || undefined,
             videoType: formData.videoUrl ? formData.videoType : undefined,
@@ -183,6 +243,9 @@ export default function AdminPortfolioPage() {
             videoType: item.videoType || 'youtube',
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             socialLinks: item.socialLinks || [] as any,
+            gallery: item.gallery || [],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            additionalVideos: item.additionalVideos || [] as any,
         });
         setEditingId(item.id);
         setShowForm(true);
@@ -442,17 +505,113 @@ export default function AdminPortfolioPage() {
                                             <div className="w-full border-t border-white/10" />
                                         </div>
                                         <div className="relative flex justify-center text-sm">
-                                            <span className="px-4 bg-[#141414] text-white/40">or paste URL</span>
+                                            <span className="px-4 bg-[#141414] text-white/40">or paste Image Address</span>
                                         </div>
                                     </div>
 
-                                    <input
-                                        type="text"
-                                        value={formData.image.startsWith('data:') ? '' : formData.image}
-                                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                        placeholder="https://example.com/image.jpg"
-                                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-lg placeholder:text-white/30 focus:outline-none focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20 transition-all"
-                                    />
+                                    <div className="space-y-1">
+                                        <input
+                                            type="text"
+                                            value={formData.image.startsWith('data:') ? '' : formData.image}
+                                            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                            placeholder={formData.image.startsWith('data:') ? "Remove uploaded image to paste URL" : "https://example.com/image.jpg"}
+                                            disabled={formData.image.startsWith('data:')}
+                                            className={`w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-lg placeholder:text-white/30 focus:outline-none focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20 transition-all ${formData.image.startsWith('data:') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        />
+                                        <p className="text-white/30 text-xs pl-1">
+                                            To add a clickable link to the project website, use the <strong>Project Link</strong> field below.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Gallery & Media Section */}
+                                <div className="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-white text-lg font-bold">
+                                            Project Gallery & Media
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={addAdditionalVideo}
+                                                className="px-3 py-1.5 bg-[#FFD700]/10 text-[#FFD700] text-sm font-semibold rounded-lg hover:bg-[#FFD700]/20 transition-all"
+                                            >
+                                                + Add Video
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-white/40 text-sm mb-4">
+                                        Add multiple images and videos. They will be displayed together in the project gallery.
+                                    </p>
+
+                                    {/* Additional Videos List */}
+                                    {formData.additionalVideos.length > 0 && (
+                                        <div className="space-y-3 mb-6">
+                                            <label className="text-white text-sm font-semibold uppercase tracking-wider">Videos</label>
+                                            {formData.additionalVideos.map((video, idx) => (
+                                                <div key={idx} className="flex gap-3">
+                                                    <select
+                                                        value={video.type}
+                                                        onChange={(e) => updateAdditionalVideo(idx, 'type', e.target.value as any)}
+                                                        className="w-1/3 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]"
+                                                    >
+                                                        {videoTypeOptions.map(opt => (
+                                                            <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">{opt.label}</option>
+                                                        ))}
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        value={video.url}
+                                                        onChange={(e) => updateAdditionalVideo(idx, 'url', e.target.value)}
+                                                        placeholder="Video URL..."
+                                                        className="flex-1 px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeAdditionalVideo(idx)}
+                                                        className="px-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Image Grid */}
+                                    <div className="space-y-3">
+                                        <label className="text-white text-sm font-semibold uppercase tracking-wider">Images</label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                            {formData.gallery.map((img, idx) => (
+                                                <div key={idx} className="relative aspect-video rounded-xl overflow-hidden group bg-white/5 border border-white/10">
+                                                    <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeGalleryImage(idx)}
+                                                        className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <div className="relative aspect-video rounded-xl border-2 border-dashed border-white/10 hover:border-[#FFD700]/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center cursor-pointer group">
+                                                <input
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/*"
+                                                    onChange={handleGalleryUpload}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="opacity-50 group-hover:opacity-100 group-hover:text-[#FFD700]">
+                                                        <path d="M12 5v14M5 12h14" />
+                                                    </svg>
+                                                </div>
+                                                <span className="text-xs text-white/40 font-medium group-hover:text-white/70">Add Images</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Link */}
@@ -469,14 +628,12 @@ export default function AdminPortfolioPage() {
                                     />
                                 </div>
 
-                                {/* Video Section */}
+                                {/* Main Video (Featured) */}
                                 <div className="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/10">
-                                    <h3 className="text-white font-bold text-lg">Video Integration</h3>
+                                    <h3 className="text-white font-bold text-lg">Featured Video (Optional)</h3>
+                                    <p className="text-white/40 text-sm mb-2">Display a main video separately or in the gallery.</p>
 
                                     <div className="space-y-3">
-                                        <label className="block text-white text-sm font-semibold uppercase tracking-wider">
-                                            Video Type
-                                        </label>
                                         <div className="flex bg-white/5 p-1 rounded-xl">
                                             {videoTypeOptions.map((type) => (
                                                 <button
@@ -492,12 +649,6 @@ export default function AdminPortfolioPage() {
                                                 </button>
                                             ))}
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <label className="block text-white text-sm font-semibold uppercase tracking-wider">
-                                            Video URL
-                                        </label>
                                         <input
                                             type="text"
                                             value={formData.videoUrl}

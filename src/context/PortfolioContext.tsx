@@ -14,6 +14,8 @@ export interface PortfolioItem {
     socialLinks?: { type: 'youtube' | 'instagram' | 'twitter' | 'linkedin' | 'facebook'; url: string }[];
     videoUrl?: string;
     videoType?: 'youtube' | 'instagram' | 'mp4';
+    gallery?: string[];
+    additionalVideos?: { type: 'youtube' | 'instagram' | 'mp4'; url: string }[];
 }
 
 interface PortfolioContextType {

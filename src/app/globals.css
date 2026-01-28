@@ -1,10 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.pause-on-hover:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+.fade-mask-x {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
 :root {
   /* Boostim Design System */
   --bg-primary: #FFFFFF;
-  --bg-secondary: #FAFAFA;
+  --bg-secondary: #FFFFFF;
   --bg-dark: #010205;
   --bg-dark-alt: #020609;
 
@@ -93,11 +116,23 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   /* Keep page content below the fixed header */
+  /* padding-top: var(--header-height); moved to specific pages */
+}
+
+/* 
+@media (min-width: 1024px) {
+  body {
+    padding-top: var(--header-height-lg);
+  }
+} 
+*/
+
+.pt-header {
   padding-top: var(--header-height);
 }
 
 @media (min-width: 1024px) {
-  body {
+  .pt-header {
     padding-top: var(--header-height-lg);
   }
 }
@@ -362,7 +397,7 @@ h6 {
   background-size: 6px 6px, cover;
   background-position: center;
   backdrop-filter: blur(32px);
-  background-color: #fafafa;
+  background-color: #ffffff;
 }
 
 .stat-card {
@@ -435,7 +470,7 @@ h6 {
   background: linear-gradient(135deg, #FFD700, #D4AF37);
   animation: gold-pulse 2s ease-in-out infinite;
   border-radius: 9999px;
-  border: 12px solid #FAFAFA;
+  border: 12px solid #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -795,7 +830,7 @@ h6 {
 /* Services Card */
 .services-card {
   position: relative;
-  background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
   border-radius: 24px;
   padding: 28px;
   display: flex;
@@ -810,7 +845,7 @@ h6 {
 .services-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
 }
 
 /* Services Card Icon */
@@ -965,7 +1000,7 @@ h6 {
   height: 54px;
   background: #010205;
   border-radius: 9999px;
-  border: 6px solid #FAFAFA;
+  border: 6px solid #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;

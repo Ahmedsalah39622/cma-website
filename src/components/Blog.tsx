@@ -34,7 +34,7 @@ const articles = [
 
 export default function Blog() {
     return (
-        <section className="py-24 lg:py-32 bg-[#FAFAFA] section-wrapper relative overflow-hidden">
+        <section className="py-24 lg:py-32 bg-[#FFFFFF] section-wrapper relative overflow-hidden">
             <GeometricBackground pattern="waves" position="right" opacity={0.05} color="#4169E1" />
             <ScrollReveal className="container-custom relative z-10">
                 {/* Header */}

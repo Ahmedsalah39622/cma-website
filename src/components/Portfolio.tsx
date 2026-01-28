@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import ScrollReveal from './ScrollReveal';
 import GeometricBackground from './GeometricBackground';
 import { usePortfolio, PortfolioItem } from '@/context/PortfolioContext';
@@ -29,7 +30,7 @@ export default function Portfolio() {
     const trackRef = useRef<HTMLDivElement | null>(null);
     const [progress, setProgress] = useState(0);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [selectedVideo, setSelectedVideo] = useState<{ url: string; type: 'youtube' | 'instagram' | 'mp4' } | null>(null);
+    const router = useRouter();
 
     // Filter projects based on active category
     const filteredProjects = activeCategory === 'All Work'
@@ -127,15 +128,8 @@ export default function Portfolio() {
             return;
         }
 
-        // Logic for active card interaction
-        if (project.videoUrl) {
-            setSelectedVideo({
-                url: project.videoUrl,
-                type: (project.videoType as 'youtube' | 'instagram' | 'mp4') || 'youtube'
-            });
-        } else if (project.link) {
-            window.open(project.link, '_blank');
-        }
+        // Navigate to project detail page
+        router.push(`/project/${project.id}`);
     };
 
     // Helper to get embed URL
@@ -321,18 +315,9 @@ export default function Portfolio() {
                                                 {/* Border */}
                                                 <div className="absolute inset-0 rounded-[24px] lg:rounded-[30px] border-[8px] lg:border-[10px] border-white/20"></div>
 
-                                                {/* Play Button Overlay (if video) */}
+                                                {/* Play Button Overlay (if video) - Visual only now */}
                                                 {project.videoUrl && (
-                                                    <div
-                                                        className="absolute inset-0 flex items-center justify-center z-20 group-hover:scale-110 transition-transform duration-300"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent centering click
-                                                            setSelectedVideo({
-                                                                url: project.videoUrl!,
-                                                                type: (project.videoType as 'youtube' | 'instagram' | 'mp4') || 'youtube'
-                                                            });
-                                                        }}
-                                                    >
+                                                    <div className="absolute inset-0 flex items-center justify-center z-20 group-hover:scale-110 transition-transform duration-300">
                                                         <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-colors cursor-pointer">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="white" className="ml-1">
                                                                 <path d="M8 5v14l11-7z" />
@@ -432,46 +417,7 @@ export default function Portfolio() {
             </div>
 
             {/* Video Modal - Moved Outside to prevent clipping */}
-            {selectedVideo && (
-                <div
-                    className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 lg:p-12 animate-fade-in"
-                    onClick={() => setSelectedVideo(null)}
-                >
-                    <button
-                        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-[110]"
-                        onClick={() => setSelectedVideo(null)}
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
-                    </button>
 
-                    <div
-                        className={`relative bg-black rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center
-                            ${selectedVideo.type === 'instagram'
-                                ? 'h-[85vh] aspect-[9/16]'
-                                : 'w-full max-w-6xl aspect-video'
-                            }`}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {selectedVideo.type === 'mp4' ? (
-                            <video
-                                src={selectedVideo.url}
-                                controls
-                                autoPlay
-                                className="w-full h-full object-contain max-h-[85vh]"
-                            />
-                        ) : (
-                            <iframe
-                                src={getEmbedUrl(selectedVideo.url, selectedVideo.type)}
-                                className="w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            />
-                        )}
-                    </div>
-                </div>
-            )}
         </section>
     );
 }

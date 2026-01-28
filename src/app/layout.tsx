@@ -5,7 +5,9 @@ import { PortfolioProvider } from "@/context/PortfolioContext";
 import { SiteDataProvider } from "@/context/SiteDataContext";
 import { TestimonialsProvider } from "@/context/TestimonialsContext";
 import { ServicesProvider } from "@/context/ServicesContext";
+import { BrandsProvider } from "@/context/BrandsContext";
 import MobileNotice from "@/components/MobileNotice";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,6 +24,7 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({
   children,
@@ -36,11 +39,15 @@ export default function RootLayout({
           <SiteDataProvider>
             <TestimonialsProvider>
               <PortfolioProvider>
-                {children}
+                <BrandsProvider>
+                  {children}
+                  <WhatsAppButton />
+                </BrandsProvider>
               </PortfolioProvider>
             </TestimonialsProvider>
           </SiteDataProvider>
         </ServicesProvider>
+        <Analytics />
       </body>
     </html>
   );
