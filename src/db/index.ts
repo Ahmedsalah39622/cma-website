@@ -4,18 +4,23 @@ import * as schema from './schema';
 
 const queryClient = process.env.DATABASE_URL;
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 if (!queryClient) {
-    if (process.env.NODE_ENV === 'production') {
-        console.error('CRITICAL: DATABASE_URL is missing in production!');
+    if (isProduction) {
+        console.error('CRITICAL ERROR: DATABASE_URL is completely missing in the Vercel Environment Variables!');
     } else {
-        console.warn('DATABASE_URL is missing. Database operations will fail.');
+        console.warn('DATABASE_URL is missing. Database operations will use mock data.');
     }
 }
 
 // Disable prefetch as it is not supported for "Transaction" pool mode 
 // Only initialize if we have a connection string to avoid localhost connection attempts
 const client = queryClient
-    ? postgres(queryClient, { prepare: false })
+    ? postgres(queryClient, {
+        prepare: false,
+        ssl: isProduction ? 'require' : false,
+    })
     : null;
 
 // export const db = drizzle(client, { schema });
