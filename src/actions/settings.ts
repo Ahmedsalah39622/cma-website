@@ -58,3 +58,43 @@ export async function updateSectionVisibility(visibility: any) {
         throw error;
     }
 }
+const DEFAULT_CATEGORIES = [
+    'UI/UX Design',
+    'Digital Marketing',
+    'Branding',
+    'Web Development',
+    'Social Media',
+    'Video Production',
+];
+
+export const getPortfolioCategories = unstable_cache(
+    async () => {
+        try {
+            const setting = await db.query.siteSettings.findFirst({
+                where: eq(siteSettings.key, 'portfolio_categories')
+            });
+            return (setting?.value as string[]) || DEFAULT_CATEGORIES;
+        } catch (error) {
+            console.error('Error fetching portfolio categories:', error);
+            return DEFAULT_CATEGORIES;
+        }
+    },
+    ['portfolio-categories'],
+    { tags: ['site-settings'] }
+);
+
+export async function updatePortfolioCategories(categories: string[]) {
+    try {
+        await db.insert(siteSettings)
+            .values({ key: 'portfolio_categories', value: categories })
+            .onConflictDoUpdate({
+                target: siteSettings.key,
+                set: { value: categories }
+            });
+        (revalidateTag as any)('site-settings');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating portfolio categories:', error);
+        throw error;
+    }
+}

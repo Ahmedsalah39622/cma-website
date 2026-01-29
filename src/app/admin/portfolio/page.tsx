@@ -3,35 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { getProjects, saveProject, deleteProject } from '@/actions/portfolio';
-
-const categoryOptions = [
-    'UI/UX Design',
-    'Digital Marketing',
-    'Branding',
-    'Web Development',
-    'Social Media',
-    'Video Production',
-];
-
-const videoTypeOptions = [
-    { value: 'youtube', label: 'YouTube' },
-    { value: 'instagram', label: 'Instagram' },
-    { value: 'tiktok', label: 'TikTok' },
-    { value: 'vimeo', label: 'Vimeo' },
-    { value: 'linkedin', label: 'LinkedIn' },
-    { value: 'twitter', label: 'X (Twitter)' },
-    { value: 'facebook', label: 'Facebook' },
-    { value: 'mp4', label: 'Direct MP4' },
-];
-
-const socialTypeOptions = [
-    { value: 'website', label: 'Website' },
-    { value: 'youtube', label: 'YouTube' },
-    { value: 'instagram', label: 'Instagram' },
-    { value: 'twitter', label: 'X (Twitter)' },
-    { value: 'linkedin', label: 'LinkedIn' },
-    { value: 'facebook', label: 'Facebook' },
-];
+import { getPortfolioCategories, updatePortfolioCategories } from '@/actions/settings';
 
 interface Project {
     id: string;
@@ -53,7 +25,7 @@ const emptyForm: Project = {
     id: '',
     title: '',
     company: '',
-    category: 'UI/UX Design',
+    category: '', // Will be set from first category in loadData
     image: '',
     year: new Date().getFullYear().toString(),
     description: '',
@@ -65,12 +37,35 @@ const emptyForm: Project = {
     additionalVideos: [],
 };
 
+const videoTypeOptions = [
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'tiktok', label: 'TikTok' },
+    { value: 'vimeo', label: 'Vimeo' },
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'twitter', label: 'X (Twitter)' },
+    { value: 'facebook', label: 'Facebook' },
+    { value: 'mp4', label: 'Direct MP4' },
+];
+
+const socialTypeOptions = [
+    { value: 'website', label: 'Website' },
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'twitter', label: 'X (Twitter)' },
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'facebook', label: 'Facebook' },
+];
+
 export default function AdminPortfolioPage() {
     const [projects, setProjects] = useState<Project[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState<Project>(emptyForm);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(false);
+    const [showCategoryManager, setShowCategoryManager] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,12 +77,16 @@ export default function AdminPortfolioPage() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const data = await getProjects();
-            const formatted = (data || []).map((p: any) => ({
+            const [projectsData, cats] = await Promise.all([
+                getProjects(),
+                getPortfolioCategories()
+            ]);
+
+            const formatted: Project[] = (projectsData || []).map((p: any) => ({
                 id: p.id,
                 title: p.title || '',
                 company: p.company || '',
-                category: p.category || 'UI/UX Design',
+                category: p.category || (cats[0] || ''),
                 image: p.imageUrl || p.image || '',
                 year: p.year?.toString() || '',
                 description: p.description || '',
@@ -98,11 +97,43 @@ export default function AdminPortfolioPage() {
                 gallery: p.gallery || [],
                 additionalVideos: p.additionalVideos || []
             }));
+
             setProjects(formatted);
+            setCategories(cats);
+            if (cats.length > 0 && !editingId) {
+                setFormData(prev => ({ ...prev, category: cats[0] }));
+            }
         } catch (err) {
             console.error('Failed to load projects', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAddCategory = async () => {
+        if (!newCategoryName.trim()) return;
+        if (categories.includes(newCategoryName.trim())) {
+            alert('Category already exists');
+            return;
+        }
+        const updated = [...categories, newCategoryName.trim()];
+        try {
+            await updatePortfolioCategories(updated);
+            setCategories(updated);
+            setNewCategoryName('');
+        } catch (error) {
+            alert('Failed to add category');
+        }
+    };
+
+    const handleDeleteCategory = async (catToDelete: string) => {
+        if (!confirm(`Are you sure you want to delete "${catToDelete}"? This will not delete projects in this category, but you should reassign them.`)) return;
+        const updated = categories.filter(c => c !== catToDelete);
+        try {
+            await updatePortfolioCategories(updated);
+            setCategories(updated);
+        } catch (error) {
+            alert('Failed to delete category');
         }
     };
 
@@ -173,7 +204,6 @@ export default function AdminPortfolioPage() {
         }));
     };
 
-    // ... Social and Video helpers remain similar, just state updates ...
     const addAdditionalVideo = () => {
         setFormData(prev => ({
             ...prev,
@@ -189,7 +219,7 @@ export default function AdminPortfolioPage() {
     };
 
     const updateAdditionalVideo = (index: number, field: 'type' | 'url', value: string) => {
-        setFormData(prev => {
+        setFormData((prev: Project) => {
             const newVideos = [...prev.additionalVideos];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             newVideos[index] = { ...newVideos[index], [field]: value } as any;
@@ -212,7 +242,7 @@ export default function AdminPortfolioPage() {
     };
 
     const updateSocialLink = (index: number, field: 'type' | 'url', value: string) => {
-        setFormData(prev => {
+        setFormData((prev: Project) => {
             const newLinks = [...prev.socialLinks];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             newLinks[index] = { ...newLinks[index], [field]: value } as any;
@@ -271,7 +301,7 @@ export default function AdminPortfolioPage() {
     };
 
     const handleCancel = () => {
-        setFormData(emptyForm);
+        setFormData({ ...emptyForm, category: categories[0] || '' });
         setEditingId(null);
         setShowForm(false);
     };
@@ -299,15 +329,52 @@ export default function AdminPortfolioPage() {
                             <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight">Portfolio Manager</h1>
                             <p className="text-white/50 mt-3 text-lg">{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
                         </div>
-                        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#D4AF37] text-black font-bold rounded-2xl hover:shadow-xl hover:shadow-[#FFD700]/30 transition-all text-lg">
-                            + Add Project
-                        </button>
+                        <div className="flex gap-4">
+                            <button onClick={() => setShowCategoryManager(true)} className="inline-flex items-center gap-3 px-6 py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-2xl hover:bg-white/10 transition-all text-lg">
+                                Manage Categories
+                            </button>
+                            <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[#D4AF37] text-black font-bold rounded-2xl hover:shadow-xl hover:shadow-[#FFD700]/30 transition-all text-lg">
+                                + Add Project
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 lg:px-8 mt-8">
-                {/* Modal */}
+                {/* Category Manager Modal */}
+                {showCategoryManager && (
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] flex items-center justify-center p-6" onClick={(e) => e.target === e.currentTarget && setShowCategoryManager(false)}>
+                        <div className="bg-[#141414] border border-white/10 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]">
+                            <div className="p-8 border-b border-white/10 flex justify-between items-center">
+                                <h2 className="text-2xl font-bold text-white">Categories</h2>
+                                <button onClick={() => setShowCategoryManager(false)} className="text-white/50 hover:text-white">×</button>
+                            </div>
+                            <div className="p-8 overflow-y-auto space-y-6">
+                                <div className="flex gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="New Category"
+                                        value={newCategoryName}
+                                        onChange={e => setNewCategoryName(e.target.value)}
+                                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-[#FFD700]"
+                                    />
+                                    <button onClick={handleAddCategory} className="px-5 py-3 bg-[#FFD700] text-black font-bold rounded-xl">Add</button>
+                                </div>
+                                <div className="space-y-3">
+                                    {categories.map(cat => (
+                                        <div key={cat} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                                            <span className="text-white">{cat}</span>
+                                            <button onClick={() => handleDeleteCategory(cat)} className="text-red-500 hover:text-red-400">Delete</button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Project Form Modal */}
                 {showForm && (
                     <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-6" onClick={(e) => e.target === e.currentTarget && handleCancel()}>
                         <div className="bg-[#141414] border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
@@ -335,7 +402,7 @@ export default function AdminPortfolioPage() {
                                 <div className="space-y-3">
                                     <label className="block text-white text-sm font-semibold uppercase">Category</label>
                                     <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full px-5 py-4 bg-[#1a1a1a] border border-white/10 rounded-xl text-white focus:border-[#FFD700] outline-none">
-                                        {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
 
