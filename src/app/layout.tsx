@@ -58,7 +58,7 @@ export default async function RootLayout({
     getBlogPosts()
   ]);
 
-  const testimonials = testimonialsData.map(t => ({
+  const testimonials = testimonialsData.map((t: any) => ({
     id: t.id,
     quote: t.quote,
     author: t.author,
@@ -66,13 +66,13 @@ export default async function RootLayout({
     image: t.imageUrl || ''
   }));
 
-  const faqs = faqsData.map(f => ({
+  const faqs = faqsData.map((f: any) => ({
     id: f.id,
     question: f.question,
     answer: f.answer
   }));
 
-  const posts = blogPostsData.map(p => ({
+  const posts = blogPostsData.map((p: any) => ({
     id: p.id,
     title: p.title,
     excerpt: p.excerpt || '',
