@@ -40,9 +40,9 @@ export default async function Home() {
   ]);
 
   // Normalize data for components
-  const normalizedBrands = brandsData.map(b => ({ ...b, image: b.imageUrl || '' }));
-  const normalizedProjects = projectsData.map(p => ({ ...p, image: p.imageUrl || '' }));
-  const normalizedTeam = teamData.map(t => ({ ...t, image: t.imageUrl || '' }));
+  const normalizedBrands = (brandsData as any[]).map((b: any) => ({ ...b, image: b.imageUrl || '' }));
+  const normalizedProjects = (projectsData as any[]).map((p: any) => ({ ...p, image: p.imageUrl || '' }));
+  const normalizedTeam = (teamData as any[]).map((t: any) => ({ ...t, image: t.imageUrl || '' }));
   const normalizedContact = {
     email: (contactData as any)?.email || '',
     phone: (contactData as any)?.phone || '',
