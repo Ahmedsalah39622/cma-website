@@ -23,21 +23,15 @@ const client = queryClient
 const createRecursiveProxy = (name: string): any => {
     const proxy: any = new Proxy(() => { }, {
         get(target, prop) {
-            if (prop === 'then') return undefined; // Not a promise
+            if (prop === 'then') {
+                return (resolve: any) => resolve([]); // Resolve with empty array by default
+            }
             if (prop === 'rows') return [];
             return createRecursiveProxy(`${name}.${String(prop)}`);
         },
         apply(target, thisArg, args) {
-            // Common patterns
-            const path = name.toLowerCase();
-            if (path.includes('findfirst')) return Promise.resolve(null);
-            if (path.includes('select') || path.includes('from') || path.includes('where') || path.includes('orderby')) {
-                const chain = createRecursiveProxy(name);
-                // If we await it, return an empty array
-                (chain as any).then = (resolve: any) => resolve([]);
-                return chain;
-            }
-            return createRecursiveProxy(name);
+            // Return the proxy itself to allow chaining, but it's also a thenable
+            return proxy;
         }
     });
     return proxy;
