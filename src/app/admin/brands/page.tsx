@@ -1,19 +1,50 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useBrands } from '@/context/BrandsContext';
-import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
+import { getBrands, saveBrand, deleteBrand } from '@/actions/brands';
+
+interface Brand {
+    id: string;
+    name: string;
+    image: string; // UI
+    image_url?: string; // DB
+}
 
 export default function BrandsAdmin() {
-    const { brands, addBrand, deleteBrand, isLoaded } = useBrands();
+    const [brands, setBrands] = useState<Brand[]>([]);
+    const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [newBrandName, setNewBrandName] = useState('');
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        loadBrands();
+    }, []);
+
+    const loadBrands = async () => {
+        setLoading(true);
+        try {
+            const data = await getBrands();
+            const formatted = (data || []).map((b: any) => ({
+                id: b.id,
+                name: b.name,
+                image: b.imageUrl || b.image_url || b.image // Drizzle camelCase
+            }));
+            setBrands(formatted);
+        } catch (err) {
+            console.error('Failed to load brands', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreviewUrl(reader.result as string);
@@ -22,27 +53,65 @@ export default function BrandsAdmin() {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newBrandName || !previewUrl) return;
+    const uploadFile = async (file: File): Promise<string | null> => {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `${fileName}`;
 
-        setIsSubmitting(true);
+            const { error: uploadError } = await supabase.storage
+                .from('brands')
+                .upload(filePath, file);
 
-        // Simulate network delay for better UX feel
-        setTimeout(() => {
-            addBrand({
-                name: newBrandName,
-                image: previewUrl
-            });
+            if (uploadError) throw uploadError;
 
-            // Reset form
-            setNewBrandName('');
-            setPreviewUrl(null);
-            setIsSubmitting(false);
-        }, 500);
+            const { data } = supabase.storage.from('brands').getPublicUrl(filePath);
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Upload Error:', error);
+            alert('Failed to upload logo. Ensure "brands" bucket exists.');
+            return null;
+        }
     };
 
-    if (!isLoaded) {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newBrandName || !selectedFile) return;
+
+        setIsSubmitting(true);
+        try {
+            const imageUrl = await uploadFile(selectedFile);
+            if (!imageUrl) throw new Error('Upload failed');
+
+            await saveBrand({
+                name: newBrandName,
+                imageUrl: imageUrl // Pass as imageUrl for Drizzle
+            });
+
+            await loadBrands();
+
+            setNewBrandName('');
+            setPreviewUrl(null);
+            setSelectedFile(null);
+        } catch (error) {
+            console.error(error);
+            alert('Failed to add brand');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteBrand(id);
+            setBrands(prev => prev.filter(b => b.id !== id));
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete brand');
+        }
+    };
+
+    if (loading && brands.length === 0) {
         return <div className="min-h-screen bg-[#0a0a14] flex items-center justify-center text-white">Loading...</div>;
     }
 
@@ -55,12 +124,6 @@ export default function BrandsAdmin() {
                         <h1 className="text-3xl font-bold text-white mb-2">Brands Management</h1>
                         <p className="text-white/50">Manage the trusted partner logos displayed on the home page.</p>
                     </div>
-                    <Link
-                        href="/admin"
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors border border-white/10"
-                    >
-                        ← Back to Dashboard
-                    </Link>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -77,7 +140,7 @@ export default function BrandsAdmin() {
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={handleImageUpload}
+                                            onChange={handleFileSelect}
                                             required={!previewUrl}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         />
@@ -116,7 +179,7 @@ export default function BrandsAdmin() {
                                     disabled={isSubmitting || !newBrandName || !previewUrl}
                                     className="w-full py-3 bg-[#FFD700] text-black font-bold rounded-xl hover:bg-[#FFD700]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
-                                    {isSubmitting ? 'Adding...' : 'Add Brand'}
+                                    {isSubmitting ? 'Uploading & Adding...' : 'Add Brand'}
                                 </button>
                             </form>
                         </div>
@@ -147,7 +210,7 @@ export default function BrandsAdmin() {
                                             {brand.name}
                                         </span>
                                         <button
-                                            onClick={() => deleteBrand(brand.id)}
+                                            onClick={() => handleDelete(brand.id)}
                                             className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"
                                             title="Delete Brand"
                                         >

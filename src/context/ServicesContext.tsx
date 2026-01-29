@@ -36,63 +36,97 @@ const SERVICES_STORAGE_KEY = 'cma_services';
 const MORE_COUNT_KEY = 'cma_services_more_count';
 const MORE_OPTIONS_KEY = 'cma_services_more_options';
 
+import { saveService, deleteService as deleteServiceAction, updateServiceSettings } from '@/actions/services';
+
 const ServicesContext = createContext<ServicesContextType | undefined>(undefined);
 
-export const ServicesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [services, setServices] = useState<Service[]>([]);
-    const [moreCount, setMoreCountState] = useState(4);
-    const [moreOptionsText, setMoreOptionsTextState] = useState('170+ options available');
-    const [isLoaded, setIsLoaded] = useState(false);
+interface ServicesProviderProps {
+    children: ReactNode;
+    initialServices?: Service[];
+    initialSettings?: { count: number; optionsText: string };
+}
 
-    useEffect(() => {
-        const stored = localStorage.getItem(SERVICES_STORAGE_KEY);
-        const storedMoreCount = localStorage.getItem(MORE_COUNT_KEY);
-        const storedMoreOptions = localStorage.getItem(MORE_OPTIONS_KEY);
+export const ServicesProvider: React.FC<ServicesProviderProps> = ({
+    children,
+    initialServices = [],
+    initialSettings = { count: 0, optionsText: 'More Options' }
+}) => {
+    // Initialize state with server data
+    const [services, setServices] = useState<Service[]>(initialServices);
+    const [moreCount, setMoreCountState] = useState(initialSettings.count);
+    const [moreOptionsText, setMoreOptionsTextState] = useState(initialSettings.optionsText);
+    const [isLoaded, setIsLoaded] = useState(true);
 
-        if (stored) {
-            setServices(JSON.parse(stored));
-        } else {
-            setServices(defaultServices);
-        }
-
-        if (storedMoreCount) setMoreCountState(parseInt(storedMoreCount));
-        if (storedMoreOptions) setMoreOptionsTextState(storedMoreOptions);
-
-        setIsLoaded(true);
-    }, []);
-
-    useEffect(() => {
-        if (isLoaded) {
-            localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(services));
-        }
-    }, [services, isLoaded]);
-
-    const addService = useCallback((service: Omit<Service, 'id'>) => {
-        const newService = { ...service, id: Date.now().toString() };
+    const addService = useCallback(async (serviceData: Omit<Service, 'id'>) => {
+        // Optimistic update
+        const tempId = Date.now().toString();
+        const newService = { ...serviceData, id: tempId };
         setServices(prev => [...prev, newService]);
+
+        try {
+            // Save to DB
+            await saveService(serviceData);
+            // The server action revalidates, but we might want to refresh the local list or wait for re-render
+            // Ideally we should replace the temp ID with the real one, but since we rely on revalidation,
+            // the page reload/re-fetch would fix it. 
+            // For a smoother experience without full reload, we assume the user won't edit it immediately 
+            // or we could refetch.
+        } catch (error) {
+            console.error('Failed to add service', error);
+            // Revert on error
+            setServices(prev => prev.filter(s => s.id !== tempId));
+        }
     }, []);
 
-    const updateService = useCallback((id: string, updates: Partial<Service>) => {
+    const updateService = useCallback(async (id: string, updates: Partial<Service>) => {
         setServices(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-    }, []);
+        try {
+            // We need to pass the full object or at least id + changes to saveService
+            // saveService expects { id, title, count, iconType }
+            const serviceToUpdate = services.find(s => s.id === id);
+            if (!serviceToUpdate) return;
 
-    const deleteService = useCallback((id: string) => {
+            await saveService({ ...serviceToUpdate, ...updates, id });
+        } catch (error) {
+            console.error('Failed to update service', error);
+            // Revert implies complex logic, simplistically we just let it be or could fetch fresh data
+        }
+    }, [services]);
+
+    const deleteService = useCallback(async (id: string) => {
+        const prevServices = services;
         setServices(prev => prev.filter(s => s.id !== id));
-    }, []);
+        try {
+            await deleteServiceAction(id);
+        } catch (error) {
+            console.error('Failed to delete service', error);
+            setServices(prevServices);
+        }
+    }, [services]);
 
     const reorderServices = useCallback((newOrder: Service[]) => {
         setServices(newOrder);
+        // Note: DB doesn't support ordering field yet based on schema seeing createdAt
+        // We might need to add 'order' column to schema if order matters persistence-wise.
     }, []);
 
-    const setMoreCount = useCallback((count: number) => {
+    const setMoreCount = useCallback(async (count: number) => {
         setMoreCountState(count);
-        localStorage.setItem(MORE_COUNT_KEY, count.toString());
-    }, []);
+        try {
+            await updateServiceSettings({ count, optionsText: moreOptionsText });
+        } catch (error) {
+            console.error('Failed to update settings', error);
+        }
+    }, [moreOptionsText]);
 
-    const setMoreOptionsText = useCallback((text: string) => {
+    const setMoreOptionsText = useCallback(async (text: string) => {
         setMoreOptionsTextState(text);
-        localStorage.setItem(MORE_OPTIONS_KEY, text);
-    }, []);
+        try {
+            await updateServiceSettings({ count: moreCount, optionsText: text });
+        } catch (error) {
+            console.error('Failed to update settings', error);
+        }
+    }, [moreCount]);
 
     return (
         <ServicesContext.Provider value={{

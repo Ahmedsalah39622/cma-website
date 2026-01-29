@@ -3,24 +3,23 @@
 import React from 'react';
 import ScrollReveal from './ScrollReveal';
 import GeometricBackground from './GeometricBackground';
-import { useServices, ServiceIcons } from '@/context/ServicesContext';
+import { ServiceIcons } from '@/context/ServicesContext';
 
-export default function Services() {
-    const { services, moreCount, moreOptionsText, isLoaded } = useServices();
+interface Service {
+    id: string;
+    title: string;
+    count: string;
+    iconType: string;
+}
 
-    if (!isLoaded) {
-        return (
-            <section id="services" className="py-20 lg:py-40 mt-16 lg:mt-32 bg-white relative overflow-hidden section-wrapper pb-24 lg:pb-32">
-                <div className="site-container">
-                    <div className="animate-pulse grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[...Array(8)].map((_, i) => (
-                            <div key={i} className="h-48 bg-gray-100 rounded-2xl" />
-                        ))}
-                    </div>
-                </div>
-            </section>
-        );
-    }
+interface ServicesProps {
+    services?: Service[];
+    moreCount?: number;
+    moreOptionsText?: string;
+}
+
+export default function Services({ services = [], moreCount = 0, moreOptionsText = 'More Options' }: ServicesProps) {
+    // No loading state needed as data is passed from server
 
     return (
         <section id="services" className="py-20 lg:py-40 mt-16 lg:mt-32 bg-white relative overflow-hidden section-wrapper pb-24 lg:pb-32">
@@ -40,7 +39,7 @@ export default function Services() {
                     {services.map((service, idx) => (
                         <div key={service.id} className="scroll-visible animate-fade-in-up group card service-card hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 text-left flex flex-col items-start h-full" style={{ animationDelay: `${0.1 + idx * 0.1}s` }}>
                             <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-800 mb-8 group-hover:bg-[#4169E1] group-hover:text-white transition-colors duration-300 shadow-sm">
-                                {ServiceIcons[service.iconType]}
+                                {ServiceIcons[service.iconType as keyof typeof ServiceIcons] || ServiceIcons['grid']}
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight group-hover:text-[#4169E1] transition-colors">{service.title}</h3>
                             <p className="text-gray-400 text-sm mt-auto font-medium">{service.count}</p>

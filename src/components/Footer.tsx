@@ -18,7 +18,11 @@ const licence = [
   { name: 'Email Address', href: '#' },
 ];
 
+import { useSiteData } from '@/context/SiteDataContext';
+
 export default function Footer() {
+  const { contactInfo } = useSiteData();
+
   return (
     <footer className="pt-20 lg:pt-32 pb-12 bg-white section-wrapper relative overflow-hidden border-t border-gray-100">
       {/* Background Decor */}
@@ -40,6 +44,13 @@ export default function Footer() {
             <p className="text-gray-500 text-sm leading-[1.8] font-[Roboto] max-w-[360px]">
               We offer a comprehensive suite of digital marketing services. From SEO and social media to branding and content creation, we serve as your partner in digital growth.
             </p>
+
+            <div className="flex flex-col gap-2 text-sm text-gray-500">
+              {contactInfo.address && <p>{contactInfo.address}</p>}
+              {contactInfo.addressLine2 && <p>{contactInfo.addressLine2}</p>}
+              {contactInfo.phone && <p className="text-[#183B73] font-semibold">{contactInfo.phone}</p>}
+              {contactInfo.email && <p className="text-[#183B73] font-semibold">{contactInfo.email}</p>}
+            </div>
 
             {/* Social Icons */}
             <div className="flex items-center gap-3">

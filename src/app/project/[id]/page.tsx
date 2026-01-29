@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePortfolio, PortfolioItem } from '@/context/PortfolioContext';
+import { getProject } from '@/actions/portfolio'; // Server Action
+import { PortfolioItem } from '@/context/PortfolioContext'; // Type definition
 import GeometricBackground from '@/components/GeometricBackground';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
-    const { items, isLoaded } = usePortfolio();
-    const [project, setProject] = useState<PortfolioItem | null>(null);
+    const [project, setProject] = useState<any | null>(null); // Use any to bridge DB/Context types or interface
+    const [loading, setLoading] = useState(true);
     const [activeMedia, setActiveMedia] = useState<{
         type: 'image' | 'video';
         url: string;
@@ -18,13 +19,33 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     } | null>(null);
 
     useEffect(() => {
-        if (isLoaded) {
-            const found = items.find(p => p.id === id);
-            setProject(found || null);
+        async function loadProject() {
+            setLoading(true);
+            try {
+                const data = await getProject(id);
+                if (data) {
+                    console.log('Project data loaded:', data.id);
+                    // Normalize DB fields to UI fields
+                    setProject({
+                        ...data,
+                        image: data.imageUrl || (data as any).image || (data as any).imageUrl,
+                        gallery: Array.isArray(data.gallery) ? data.gallery : [],
+                        additionalVideos: Array.isArray(data.additionalVideos) ? data.additionalVideos : [],
+                        socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : [],
+                    });
+                } else {
+                    console.error('Project not found for ID:', id);
+                }
+            } catch (err) {
+                console.error('Error in loadProject:', err);
+            } finally {
+                setLoading(false);
+            }
         }
-    }, [isLoaded, items, id]);
+        loadProject();
+    }, [id]);
 
-    if (!isLoaded) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-[#FFD700]/30 border-t-[#FFD700] rounded-full animate-spin" />
@@ -48,22 +69,23 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     if (project.videoUrl) {
         allVideos.push({ type: project.videoType || 'youtube', url: project.videoUrl });
     }
-    if (project.additionalVideos) {
+    if (project.additionalVideos && Array.isArray(project.additionalVideos)) {
         allVideos.push(...project.additionalVideos);
     }
 
-    
+
     const allImages = [];
     if (project.image) allImages.push(project.image);
-    if (project.gallery) allImages.push(...project.gallery);
+    if (project.gallery && Array.isArray(project.gallery)) allImages.push(...project.gallery);
 
     const getEmbedUrl = (url: string, type: string) => {
+        if (!url) return '';
+
         if (type === 'youtube') {
             let videoId = '';
             if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1]?.split('?')[0];
             else if (url.includes('v=')) videoId = url.split('v=')[1]?.split('&')[0];
             else videoId = url.split('/').pop() || '';
-            // Added autoplay for lightbox
             return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         }
         if (type === 'instagram') {
@@ -71,6 +93,25 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             const cleanUrl = url.endsWith('/') ? url : `${url}/`;
             return `${cleanUrl}embed`;
         }
+        if (type === 'vimeo') {
+            const videoId = url.split('/').pop();
+            return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+        }
+        if (type === 'tiktok') {
+            // Extract ID if full URL, or assume typical embed format
+            let videoId = '';
+            if (url.includes('/video/')) videoId = url.split('/video/')[1]?.split('?')[0];
+            else videoId = url.split('/').pop() || '';
+            return `https://www.tiktok.com/embed/v2/${videoId}`;
+        }
+        if (type === 'facebook') {
+            // Facebook requires full plugin URL usually, but basic watch/share URLs might work with some endpoints
+            // Best effort: usage of facebook plugin endpoint if they provide just a post URL
+            if (url.includes('facebook.com/plugins')) return url;
+            return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&width=560`;
+        }
+        // LinkedIn and Twitter generally don't support simple iframe embeds of standard URLs without scripts. 
+        // We will return the URL, assuming the user might paste the 'src' from an embed code.
         return url;
     };
 
@@ -92,7 +133,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             <Header />
 
             {/* Hero Section */}
-            <section className="relative pt-48 pb-20 overflow-hidden">
+            <section className="relative pb-24 overflow-hidden" style={{ paddingTop: '150px' }}>
                 <GeometricBackground pattern="hexagon" position="right" opacity={0.03} color="#000" />
                 <div className="container-custom relative z-10">
                     <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
@@ -151,12 +192,13 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             Project Gallery
                         </h2>
 
-                        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+                        <div className="columns-1 md:columns-2 lg:columns-3 gap-8">
                             {/* Videos First */}
                             {allVideos.map((video, idx) => (
                                 <div
                                     key={`vid-${idx}`}
-                                    className="break-inside-avoid relative rounded-2xl overflow-hidden bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/5 group cursor-pointer"
+                                    className="break-inside-avoid relative rounded-2xl overflow-hidden bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/5 group cursor-pointer p-4"
+                                    style={{ marginBottom: '40px', display: 'inline-block', width: '100%' }}
                                     onClick={() => setActiveMedia({ type: 'video', url: video.url, videoType: video.type })}
                                 >
                                     <div className="relative aspect-video pointer-events-none">
@@ -194,7 +236,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             {allImages.map((img, idx) => (
                                 <div
                                     key={`img-${idx}`}
-                                    className="break-inside-avoid relative rounded-2xl overflow-hidden bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 cursor-pointer group"
+                                    className="break-inside-avoid relative rounded-2xl overflow-hidden bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 cursor-pointer group p-4"
+                                    style={{ marginBottom: '40px', display: 'inline-block', width: '100%' }}
                                     onClick={() => setActiveMedia({ type: 'image', url: img })}
                                 >
                                     <img

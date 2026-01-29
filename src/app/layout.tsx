@@ -6,6 +6,7 @@ import { SiteDataProvider } from "@/context/SiteDataContext";
 import { TestimonialsProvider } from "@/context/TestimonialsContext";
 import { ServicesProvider } from "@/context/ServicesContext";
 import { BrandsProvider } from "@/context/BrandsContext";
+import { FAQProvider } from "@/context/FAQContext";
 import MobileNotice from "@/components/MobileNotice";
 import WhatsAppButton from "@/components/WhatsAppButton";
 
@@ -26,24 +27,66 @@ export const metadata: Metadata = {
 };
 import { Analytics } from "@vercel/analytics/react";
 
-export default function RootLayout({
+import { getServices, getServiceSettings } from '@/actions/services';
+import { getTestimonials } from '@/actions/testimonials';
+import { getFaqs } from '@/actions/faqs';
+import { getBlogPosts } from '@/actions/blog';
+import { BlogProvider } from "@/context/BlogContext";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [services, settings, testimonialsData, faqsData, blogPostsData] = await Promise.all([
+    getServices(),
+    getServiceSettings(),
+    getTestimonials(),
+    getFaqs(),
+    getBlogPosts()
+  ]);
+
+  const testimonials = testimonialsData.map(t => ({
+    id: t.id,
+    quote: t.quote,
+    author: t.author,
+    role: t.role || '',
+    image: t.imageUrl || ''
+  }));
+
+  const faqs = faqsData.map(f => ({
+    id: f.id,
+    question: f.question,
+    answer: f.answer
+  }));
+
+  const posts = blogPostsData.map(p => ({
+    id: p.id,
+    title: p.title,
+    excerpt: p.excerpt || '',
+    color: p.color || '#45A7DE',
+    readTime: p.readTime || '5 min read',
+    content: p.content || '',
+    imageUrl: p.imageUrl || ''
+  }));
+
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} antialiased min-h-screen flex flex-col`}>
         <MobileNotice />
-        <ServicesProvider>
+        <ServicesProvider initialServices={services as any} initialSettings={settings as any}>
           <SiteDataProvider>
-            <TestimonialsProvider>
-              <PortfolioProvider>
-                <BrandsProvider>
-                  {children}
-                  <WhatsAppButton />
-                </BrandsProvider>
-              </PortfolioProvider>
+            <TestimonialsProvider initialTestimonials={testimonials}>
+              <FAQProvider initialFaqs={faqs}>
+                <BlogProvider initialPosts={posts}>
+                  <PortfolioProvider>
+                    <BrandsProvider>
+                      {children}
+                      <WhatsAppButton />
+                    </BrandsProvider>
+                  </PortfolioProvider>
+                </BlogProvider>
+              </FAQProvider>
             </TestimonialsProvider>
           </SiteDataProvider>
         </ServicesProvider>

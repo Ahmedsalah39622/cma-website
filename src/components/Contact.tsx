@@ -2,10 +2,20 @@
 
 import React, { useState } from 'react';
 import ScrollReveal from './ScrollReveal';
-import { useSiteData } from '@/context/SiteDataContext';
+import { submitContact } from '@/actions/contact';
 
-export default function Contact() {
-    const { contactInfo, addContactSubmission, isLoaded } = useSiteData();
+interface ContactInfo {
+    email: string;
+    phone: string;
+    address: string;
+    addressLine2?: string;
+}
+
+interface ContactProps {
+    contactInfo?: ContactInfo;
+}
+
+export default function Contact({ contactInfo = { email: '', phone: '', address: '' } }: ContactProps) {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -16,7 +26,7 @@ export default function Contact() {
     const [submitted, setSubmitted] = useState(false);
     const [focusedField, setFocusedField] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!formData.name || !formData.email) {
@@ -26,25 +36,20 @@ export default function Contact() {
 
         setIsSubmitting(true);
 
-        setTimeout(() => {
-            addContactSubmission(formData);
+        try {
+            await submitContact(formData);
             setFormData({ name: '', email: '', website: '', message: '' });
-            setIsSubmitting(false);
             setSubmitted(true);
-
             setTimeout(() => setSubmitted(false), 3000);
-        }, 300);
+        } catch (error) {
+            console.error('Submission failed:', error);
+            alert('Failed to send message. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    if (!isLoaded) {
-        return (
-            <section id="contact" className="py-32 lg:py-40 bg-white section-wrapper">
-                <div className="container-custom">
-                    <div className="animate-pulse h-96 bg-gray-100 rounded-3xl" />
-                </div>
-            </section>
-        );
-    }
+    // Loading check removed as data comes from props
 
     return (
         <section id="contact" className="py-32 lg:py-44 bg-white section-wrapper relative overflow-hidden">

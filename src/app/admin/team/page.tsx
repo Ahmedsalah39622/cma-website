@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { useSiteData, TeamMember } from '@/context/SiteDataContext';
+import React, { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { getTeamMembers, saveTeamMember, deleteTeamMember } from '@/actions/team';
 
 const bgColorOptions = [
     { name: 'Peach', value: '#FFE4C4' },
@@ -12,10 +13,22 @@ const bgColorOptions = [
     { name: 'Mint', value: '#98FB98' },
 ];
 
+interface TeamMember {
+    id: string;
+    name: string;
+    role: string;
+    image: string; // Used for UI
+    image_url?: string; // DB field
+    bgColor: string; // UI
+    bg_color?: string; // DB field
+}
+
 interface FormData {
+    id?: string;
     name: string;
     role: string;
     image: string;
+    image_url?: string;
     bgColor: string;
 }
 
@@ -27,7 +40,8 @@ const emptyForm: FormData = {
 };
 
 export default function AdminTeamPage() {
-    const { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember, isLoaded } = useSiteData();
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState<FormData>(emptyForm);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(false);
@@ -35,7 +49,51 @@ export default function AdminTeamPage() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Image upload handling
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const data = await getTeamMembers();
+            const formatted = (data || []).map((m: any) => ({
+                id: m.id,
+                name: m.name,
+                role: m.role,
+                image: m.imageUrl || m.image_url || m.image, // Handle Drizzle camelCase or potential inputs
+                bgColor: m.bgColor || m.bg_color || '#FFE4C4'
+            }));
+            setTeamMembers(formatted);
+        } catch (err) {
+            console.error('Failed to load team', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Helper: Upload File to Supabase
+    const uploadFile = async (file: File, bucket: string = 'team'): Promise<string | null> => {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from(bucket)
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            return data.publicUrl;
+        } catch (error) {
+            console.error('Upload Error:', error);
+            alert('Failed to upload file. Ensure "team" bucket exists and is public.');
+            return null;
+        }
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -43,70 +101,68 @@ export default function AdminTeamPage() {
             alert('Please select an image file');
             return;
         }
+
         setIsUploading(true);
-        try {
-            const base64 = await compressImage(file);
-            setFormData({ ...formData, image: base64 });
-        } catch {
-            alert('Error processing image');
-        } finally {
-            setIsUploading(false);
+        const url = await uploadFile(file);
+
+        if (url) {
+            setFormData(prev => ({
+                ...prev,
+                image: url,
+                image_url: url
+            }));
         }
+        setIsUploading(false);
     };
 
-    const compressImage = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) { reject(new Error('Canvas not supported')); return; }
-                    let { width, height } = img;
-                    const maxSize = 600;
-                    if (width > maxSize || height > maxSize) {
-                        if (width > height) { height = (height / width) * maxSize; width = maxSize; }
-                        else { width = (width / height) * maxSize; height = maxSize; }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.8));
-                };
-                img.onerror = () => reject(new Error('Failed to load image'));
-                img.src = e.target?.result as string;
-            };
-            reader.onerror = () => reject(new Error('Failed to read file'));
-            reader.readAsDataURL(file);
-        });
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name || !formData.role) {
             alert('Please fill in name and role');
             return;
         }
-        if (editingId) {
-            updateTeamMember(editingId, formData);
-            setEditingId(null);
-        } else {
-            addTeamMember(formData);
+
+        try {
+            const submitData = {
+                id: editingId || undefined,
+                name: formData.name,
+                role: formData.role,
+                imageUrl: formData.image_url || formData.image, // Pass as imageUrl for Drizzle action
+                bgColor: formData.bgColor
+            };
+
+            await saveTeamMember(submitData);
+            await loadData();
+
+            handleCancel();
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Failed to save member');
         }
-        setFormData(emptyForm);
-        setShowForm(false);
     };
 
     const handleEdit = (member: TeamMember) => {
-        setFormData({ name: member.name, role: member.role, image: member.image, bgColor: member.bgColor });
+        setFormData({
+            id: member.id,
+            name: member.name,
+            role: member.role,
+            image: member.image,
+            image_url: member.image,
+            bgColor: member.bgColor
+        });
         setEditingId(member.id);
         setShowForm(true);
     };
 
-    const handleDelete = (id: string) => {
-        deleteTeamMember(id);
-        setDeleteConfirm(null);
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteTeamMember(id);
+            setTeamMembers(prev => prev.filter(m => m.id !== id));
+            setDeleteConfirm(null);
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete member');
+        }
     };
 
     const handleCancel = () => {
@@ -115,7 +171,7 @@ export default function AdminTeamPage() {
         setShowForm(false);
     };
 
-    if (!isLoaded) {
+    if (loading && teamMembers.length === 0) {
         return (
             <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
                 <div className="animate-pulse space-y-8">
@@ -191,7 +247,7 @@ export default function AdminTeamPage() {
                                     ) : (
                                         <div className="relative rounded-2xl overflow-hidden bg-white/5 border border-white/10 aspect-square w-32">
                                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                                            <button type="button" onClick={() => setFormData({ ...formData, image: '' })} className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white">×</button>
+                                            <button type="button" onClick={() => setFormData({ ...formData, image: '', image_url: '' })} className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white">×</button>
                                         </div>
                                     )}
                                 </div>

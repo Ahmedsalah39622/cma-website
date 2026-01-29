@@ -1,28 +1,83 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useSiteData } from '@/context/SiteDataContext';
+import React, { useState, useEffect } from 'react';
+import { getContactInfo, updateContactInfo, getContactSubmissions, markSubmissionRead, deleteSubmission } from '@/actions/contact';
 
 export default function AdminContactPage() {
-    const { contactInfo, updateContactInfo, contactSubmissions, markSubmissionRead, deleteSubmission, isLoaded } = useSiteData();
+    const [contactInfo, setContactInfo] = useState({
+        email: '',
+        phone: '',
+        address: '',
+        addressLine2: ''
+    });
+    const [contactSubmissions, setContactSubmissions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState(contactInfo);
     const [viewingSubmission, setViewingSubmission] = useState<string | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-    const handleSaveInfo = () => {
-        updateContactInfo(formData);
-        setEditing(false);
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const [info, submissions] = await Promise.all([
+                getContactInfo(),
+                getContactSubmissions()
+            ]);
+            setContactInfo(info);
+            setFormData(info);
+            setContactSubmissions(submissions || []);
+        } catch (err) {
+            console.error('Failed to load contact data', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleViewSubmission = (id: string) => {
-        markSubmissionRead(id);
+    const handleSaveInfo = async () => {
+        try {
+            await updateContactInfo(formData);
+            setContactInfo(formData);
+            setEditing(false);
+        } catch (err) {
+            console.error('Failed to save info', err);
+            alert('Failed to save contact info');
+        }
+    };
+
+    const handleViewSubmission = async (id: string) => {
         setViewingSubmission(id);
+        const sub = contactSubmissions.find(s => s.id === id);
+        if (sub && !sub.read) {
+            try {
+                await markSubmissionRead(id);
+                setContactSubmissions(prev => prev.map(s => s.id === id ? { ...s, read: true } : s));
+            } catch (err) {
+                console.error('Failed to mark read', err);
+            }
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteSubmission(id);
+            setContactSubmissions(prev => prev.filter(s => s.id !== id));
+            setDeleteConfirm(null);
+            if (viewingSubmission === id) setViewingSubmission(null);
+        } catch (err) {
+            console.error('Failed to delete', err);
+            alert('Failed to delete submission');
+        }
     };
 
     const unreadCount = contactSubmissions.filter(s => !s.read).length;
 
-    if (!isLoaded) {
+    if (loading) {
         return (
             <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
                 <div className="animate-pulse space-y-8">
@@ -188,7 +243,7 @@ export default function AdminContactPage() {
                             <h3 className="text-2xl font-bold text-white mb-3">Delete Submission?</h3>
                             <div className="flex gap-4 mt-8">
                                 <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-6 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20">Cancel</button>
-                                <button onClick={() => { deleteSubmission(deleteConfirm); setDeleteConfirm(null); }} className="flex-1 px-6 py-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600">Delete</button>
+                                <button onClick={() => { handleDelete(deleteConfirm); }} className="flex-1 px-6 py-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600">Delete</button>
                             </div>
                         </div>
                     </div>

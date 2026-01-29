@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ScrollReveal from './ScrollReveal';
 import GeometricBackground from './GeometricBackground';
-import { usePortfolio, PortfolioItem } from '@/context/PortfolioContext';
+import { PortfolioItem } from '@/context/PortfolioContext';
 
 // Social Icon Components
 const SocialIcon = ({ type }: { type: string }) => {
@@ -19,18 +19,36 @@ const SocialIcon = ({ type }: { type: string }) => {
             return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>;
         case 'facebook':
             return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>;
+        case 'website':
+            return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
         default:
             return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>;
     }
 };
 
-export default function Portfolio() {
-    const { items, categories, isLoaded } = usePortfolio();
+interface PortfolioProps {
+    projects?: PortfolioItem[];
+}
+
+export default function Portfolio({ projects = [] }: PortfolioProps) {
+    // Normalize props to expected format if needed, but assuming Drizzle returns compatible shape or we map it
+    const items = projects.map(p => ({
+        ...p,
+        image: (p as any).imageUrl || p.image, // Ensure image URL is found
+        id: p.id
+    }));
+
     const [activeCategory, setActiveCategory] = useState('All Work');
     const trackRef = useRef<HTMLDivElement | null>(null);
     const [progress, setProgress] = useState(0);
     const [activeIndex, setActiveIndex] = useState(0);
     const router = useRouter();
+
+    // Extract unique categories from items
+    const categories = React.useMemo(() => {
+        const cats = new Set(items.map(item => item.category));
+        return ['All Work', ...Array.from(cats)];
+    }, [items]);
 
     // Filter projects based on active category
     const filteredProjects = activeCategory === 'All Work'
@@ -122,61 +140,23 @@ export default function Portfolio() {
     }, [activeCategory]);
 
     const handleCardClick = (project: PortfolioItem, index: number) => {
-        // If not active, center it first
-        if (index !== activeIndex) {
-            centerItemAt(index);
-            return;
-        }
+        // Force active index to update immediately for visual feedback
+        setActiveIndex(index);
+        centerItemAt(index);
 
-        // Navigate to project detail page
-        router.push(`/project/${project.id}`);
-    };
-
-    // Helper to get embed URL
-    const getEmbedUrl = (url: string, type: string) => {
-        if (type === 'youtube') {
-            let videoId = '';
-            if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1]?.split('?')[0];
-            } else if (url.includes('v=')) {
-                videoId = url.split('v=')[1]?.split('&')[0];
-            } else {
-                videoId = url.split('/').pop() || '';
-            }
-            return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        }
-        if (type === 'instagram') {
-            // Check if it's already an embed URL
-            if (url.includes('/embed')) return url;
-            // Ensure trailing slash for consistent parsing
-            const cleanUrl = url.endsWith('/') ? url : `${url}/`;
-            return `${cleanUrl}embed`;
-        }
-        return url;
+        // Small delay to let the centering animation start, then navigate
+        setTimeout(() => {
+            router.push(`/project/${project.id}`);
+        }, 100);
     };
 
     // Helper to get YouTube ID
     const getYoutubeId = (url: string) => {
         try {
-            // Handle standard watch URLs (v=...)
-            if (url.includes('v=')) {
-                return url.split('v=')[1]?.split('&')[0];
-            }
-            // Handle youtu.be short links
-            if (url.includes('youtu.be/')) {
-                return url.split('youtu.be/')[1]?.split('?')[0];
-            }
-            // Handle Shorts URLs
-            if (url.includes('/shorts/')) {
-                return url.split('/shorts/')[1]?.split('?')[0];
-            }
-            // Handle Embed URLs
-            if (url.includes('/embed/')) {
-                return url.split('/embed/')[1]?.split('?')[0];
-            }
-
-            // Fallback: Remove query params and take the last segment
-            // This handles generic cases but is riskier, so we rely on specific patterns first
+            if (url.includes('v=')) return url.split('v=')[1]?.split('&')[0];
+            if (url.includes('youtu.be/')) return url.split('youtu.be/')[1]?.split('?')[0];
+            if (url.includes('/shorts/')) return url.split('/shorts/')[1]?.split('?')[0];
+            if (url.includes('/embed/')) return url.split('/embed/')[1]?.split('?')[0];
             const cleanUrl = url.split('?')[0];
             return cleanUrl.split('/').pop() || '';
         } catch (e) {
@@ -195,7 +175,6 @@ export default function Portfolio() {
                     <div className="absolute w-[2000px] h-[1400px] bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-full blur-3xl -right-[400px] -top-[400px] rotate-[115deg]"></div>
                 </div>
 
-                {/* Hexagon Pattern Overlay - Right Side */}
                 <div className="absolute top-0 right-0 w-[500px] h-full opacity-[0.08] pointer-events-none">
                     <svg viewBox="0 0 200 400" className="w-full h-full" preserveAspectRatio="xMaxYMid slice">
                         <defs>
@@ -247,32 +226,25 @@ export default function Portfolio() {
                         <div
                             ref={trackRef}
                             onScroll={onScroll}
-                            className="carousel-track mt-6 lg:mt-0 flex items-center" // Added items-center for vertical alignment
+                            className="carousel-track mt-6 lg:mt-0 flex items-center"
                         >
-                            {!isLoaded ? (
-                                // Skeleton loading placeholders
-                                [...Array(4)].map((_, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="portfolio-card flex-shrink-0 w-[280px] h-[280px] lg:w-[380px] lg:h-[400px] rounded-[24px] lg:rounded-[30px] bg-gradient-to-br from-[#E8E8E8] to-[#D5D5D5] animate-pulse"
-                                    />
-                                ))
-                            ) : filteredProjects.length === 0 ? (
-                                // Empty state
-                                <div className="w-full text-center text-white/60 py-20">
-                                    <p className="text-lg">No portfolio items in this category.</p>
+                            {items.length === 0 ? (
+                                <div className="w-full text-center text-white/60 py-20 flex-shrink-0">
+                                    <p className="text-lg">No portfolio items found.</p>
                                     <p className="text-sm mt-2">Add items from the admin panel.</p>
                                 </div>
+                            ) : filteredProjects.length === 0 ? (
+                                <div className="w-full text-center text-white/60 py-20 flex-shrink-0">
+                                    <p className="text-lg">No portfolio items in this category.</p>
+                                    <p className="text-sm mt-2">Try a different filter.</p>
+                                </div>
                             ) : (
-                                // Portfolio Cards
                                 filteredProjects.map((project, idx) => {
-                                    // Determine dimensions based on video type (Reel vs Normal)
                                     const isReel = project.videoType === 'instagram';
                                     const cardDimensions = isReel
-                                        ? 'w-[280px] h-[480px] lg:w-[320px] lg:h-[560px]' // Vertical Reel format
-                                        : 'w-[280px] h-[280px] lg:w-[380px] lg:h-[400px]'; // Standard Square/Rect format
+                                        ? 'w-[280px] h-[480px] lg:w-[320px] lg:h-[560px]'
+                                        : 'w-[280px] h-[280px] lg:w-[380px] lg:h-[400px]';
 
-                                    // Auto-Thumbnail Logic
                                     let displayImage = project.image;
                                     if (!displayImage && project.videoType === 'youtube' && project.videoUrl) {
                                         const ytid = getYoutubeId(project.videoUrl);
@@ -288,7 +260,6 @@ export default function Portfolio() {
                                             onClick={() => handleCardClick(project, idx)}
                                         >
                                             <div className={`${cardDimensions} rounded-[24px] lg:rounded-[30px] relative overflow-hidden group cursor-pointer transition-all duration-300`}>
-                                                {/* Background Image or Gradient */}
                                                 <div className="absolute inset-0">
                                                     {displayImage ? (
                                                         <img
@@ -297,7 +268,6 @@ export default function Portfolio() {
                                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                             loading="lazy"
                                                             onError={(e) => {
-                                                                // Fallback if maxresdefault doesn't exist (e.g. older videos)
                                                                 const target = e.target as HTMLImageElement;
                                                                 if (target.src.includes('maxresdefault')) {
                                                                     target.src = target.src.replace('maxresdefault', 'hqdefault');
@@ -309,13 +279,9 @@ export default function Portfolio() {
                                                     )}
                                                 </div>
 
-                                                {/* Overlay gradient for text readability */}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                                                {/* Border */}
                                                 <div className="absolute inset-0 rounded-[24px] lg:rounded-[30px] border-[8px] lg:border-[10px] border-white/20"></div>
 
-                                                {/* Play Button Overlay (if video) - Visual only now */}
                                                 {project.videoUrl && (
                                                     <div className="absolute inset-0 flex items-center justify-center z-20 group-hover:scale-110 transition-transform duration-300">
                                                         <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg hover:bg-white/30 transition-colors cursor-pointer">
@@ -326,7 +292,6 @@ export default function Portfolio() {
                                                     </div>
                                                 )}
 
-                                                {/* Company Label */}
                                                 <div className="absolute top-6 lg:top-8 left-6 lg:left-8 flex items-center gap-3 z-10 w-full pr-16 text-left">
                                                     <div className="w-[40px] lg:w-[54px] h-[1px] bg-white/50 shrink-0"></div>
                                                     <span className="text-white/90 font-semibold text-xs lg:text-sm tracking-[-0.02em] whitespace-nowrap overflow-hidden text-ellipsis">
@@ -334,14 +299,12 @@ export default function Portfolio() {
                                                     </span>
                                                 </div>
 
-                                                {/* Category Badge */}
                                                 <div className="absolute top-6 lg:top-8 right-6 lg:right-8 z-10">
                                                     <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-xs font-medium">
                                                         {project.category}
                                                     </span>
                                                 </div>
 
-                                                {/* Title */}
                                                 <div className="absolute bottom-6 lg:bottom-8 left-6 lg:left-8 right-6 lg:right-8 z-10">
                                                     <h3 className="text-white font-semibold text-lg lg:text-xl leading-[1.35] mb-2 pr-8 text-left">
                                                         {project.title}
@@ -352,7 +315,6 @@ export default function Portfolio() {
                                                         </p>
                                                     )}
 
-                                                    {/* Social Links Row */}
                                                     <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                                                         {(project.socialLinks || []).map((link, i) => (
                                                             <a
@@ -366,7 +328,6 @@ export default function Portfolio() {
                                                                 <SocialIcon type={link.type} />
                                                             </a>
                                                         ))}
-                                                        {/* External Link Indicator if present */}
                                                         {!project.videoUrl && project.link && (
                                                             <div className="flex items-center gap-2 text-[#FFD700] text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <span>View Project</span>
@@ -380,7 +341,6 @@ export default function Portfolio() {
                                                     </div>
                                                 </div>
 
-                                                {/* Hover Effect */}
                                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-[24px] lg:rounded-[30px]"></div>
                                             </div>
                                         </div>
@@ -415,9 +375,6 @@ export default function Portfolio() {
                     </div>
                 </ScrollReveal>
             </div>
-
-            {/* Video Modal - Moved Outside to prevent clipping */}
-
         </section>
     );
 }

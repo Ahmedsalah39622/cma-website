@@ -3,26 +3,10 @@
 import React, { useState } from 'react';
 import GeometricBackground from './GeometricBackground';
 
-const faqs = [
-    {
-        question: 'Why is digital marketing important for my business?',
-        answer: 'Digital marketing allows businesses to reach and engage with a wider audience, generate leads, drive website traffic, and increase brand visibility. It provides measurable results, allows for targeted marketing efforts, and enables businesses to adapt and optimize their strategies based on data and insights.',
-    },
-    {
-        question: 'How can digital marketing help improve my website\'s visibility?',
-        answer: 'Through SEO optimization, content marketing, social media engagement, and paid advertising, we can significantly improve your website\'s visibility in search results and across digital platforms.',
-    },
-    {
-        question: 'How long does it take to see results from digital marketing efforts?',
-        answer: 'Results vary depending on the strategy. PPC can show immediate results, while SEO typically takes 3-6 months. We provide regular reports to track progress and adjust strategies accordingly.',
-    },
-    {
-        question: 'How do you measure the success of digital marketing campaigns?',
-        answer: 'We use comprehensive analytics including traffic metrics, conversion rates, ROI, engagement rates, and custom KPIs tailored to your specific business goals.',
-    },
-];
+import { useFAQs } from '@/context/FAQContext';
 
 export default function FAQ() {
+    const { faqs } = useFAQs();
     const [openIndex, setOpenIndex] = useState(0);
 
     return (

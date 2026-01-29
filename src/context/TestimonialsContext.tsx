@@ -42,49 +42,61 @@ const defaultTestimonials: Testimonial[] = [
     },
 ];
 
+import { saveTestimonial, deleteTestimonial as deleteTestimonialAction } from '@/actions/testimonials';
+
 const TestimonialsContext = createContext<TestimonialsContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'cma_testimonials';
+interface TestimonialsProviderProps {
+    children: ReactNode;
+    initialTestimonials?: Testimonial[];
+}
 
-export function TestimonialsProvider({ children }: { children: ReactNode }) {
-    const [testimonials, setTestimonials] = useState<Testimonial[]>(defaultTestimonials);
-    const [isLoaded, setIsLoaded] = useState(false);
+export function TestimonialsProvider({ children, initialTestimonials = [] }: TestimonialsProviderProps) {
+    const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+    const [isLoaded, setIsLoaded] = useState(true);
 
-    // Load from localStorage on mount
-    useEffect(() => {
+    const addTestimonial = useCallback(async (testimonial: Omit<Testimonial, 'id'>) => {
+        const tempId = Date.now().toString();
+        const newItem: Testimonial = { ...testimonial, id: tempId };
+
+        // Optimistic update
+        setTestimonials(prev => [...prev, newItem]);
+
         try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                setTestimonials(JSON.parse(stored));
-            }
+            await saveTestimonial(testimonial);
+            // In a real app we might want to fetch the real ID or revalidate
         } catch (error) {
-            console.error('Error loading testimonials:', error);
-        }
-        setIsLoaded(true);
-    }, []);
-
-    // Save to localStorage
-    const saveTestimonials = useCallback((items: Testimonial[]) => {
-        setTestimonials(items);
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-        } catch (error) {
-            console.error('Error saving testimonials:', error);
+            console.error('Error saving testimonial:', error);
+            // Revert
+            setTestimonials(prev => prev.filter(t => t.id !== tempId));
         }
     }, []);
 
-    const addTestimonial = useCallback((testimonial: Omit<Testimonial, 'id'>) => {
-        const newItem: Testimonial = { ...testimonial, id: Date.now().toString() };
-        saveTestimonials([...testimonials, newItem]);
-    }, [testimonials, saveTestimonials]);
+    const updateTestimonial = useCallback(async (id: string, testimonial: Partial<Testimonial>) => {
+        setTestimonials(prev => prev.map(t => t.id === id ? { ...t, ...testimonial } : t));
 
-    const updateTestimonial = useCallback((id: string, testimonial: Partial<Testimonial>) => {
-        saveTestimonials(testimonials.map(t => t.id === id ? { ...t, ...testimonial } : t));
-    }, [testimonials, saveTestimonials]);
+        try {
+            const current = testimonials.find(t => t.id === id);
+            if (!current) return;
 
-    const deleteTestimonial = useCallback((id: string) => {
-        saveTestimonials(testimonials.filter(t => t.id !== id));
-    }, [testimonials, saveTestimonials]);
+            await saveTestimonial({ ...current, ...testimonial, id });
+        } catch (error) {
+            console.error('Error updating testimonial:', error);
+            // Revert logic would be here
+        }
+    }, [testimonials]);
+
+    const deleteTestimonial = useCallback(async (id: string) => {
+        const prevTestimonials = testimonials;
+        setTestimonials(prev => prev.filter(t => t.id !== id));
+
+        try {
+            await deleteTestimonialAction(id);
+        } catch (error) {
+            console.error('Error deleting testimonial:', error);
+            setTestimonials(prevTestimonials);
+        }
+    }, [testimonials]);
 
     return (
         <TestimonialsContext.Provider

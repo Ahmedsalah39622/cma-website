@@ -75,19 +75,13 @@ const Header = () => {
 
             {/* Logo */}
             <Link href="/" className={`flex items-center gap-3 mr-8 lg:mr-12 ${isAnimated ? 'appear-stagger-1' : 'opacity-0'}`}>
-              <div className="relative w-[42px] h-[42px]">
-                {/* Gold Dropped Circle Shape */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700] to-[#D4AF37] rounded-[8px_8px_24px_8px] shadow-sm flex items-center justify-center overflow-hidden">
-                  {/* Logo Image Inside - Small & Centered */}
-                  <div className="relative w-[24px] h-[24px]">
-                    <Image
-                      src="/logo.png"
-                      alt="CMA Logo"
-                      fill
-                      className="object-contain brightness-0"
-                    />
-                  </div>
-                </div>
+              <div className="relative w-[60px] h-[60px]">
+                <Image
+                  src="/logo.png"
+                  alt="CMA Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
               <span className="text-[#020407] font-bold text-2xl font-[Manrope] tracking-[-0.03em]">CMA</span>
             </Link>

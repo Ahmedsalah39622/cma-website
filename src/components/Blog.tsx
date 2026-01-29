@@ -5,34 +5,10 @@ import Link from 'next/link';
 import ScrollReveal from './ScrollReveal';
 import GeometricBackground from './GeometricBackground';
 
-const articles = [
-    {
-        id: 1,
-        color: '#45A7DE',
-        readTime: '5 min read',
-        title: 'How a Digital Marketing Agency Can Boost Your Business',
-        excerpt: 'We are the top digital marketing agency for branding corp. We offer a full rang engine ....',
-        filled: true,
-    },
-    {
-        id: 2,
-        color: '#EA5F38',
-        readTime: '5 min read',
-        title: 'The Latest Trends and Strategies with a Digital Marketing Agency',
-        excerpt: 'Working with this digital marketing agency has been a true partnership. They have tak...',
-        filled: false,
-    },
-    {
-        id: 3,
-        color: '#6A26F1',
-        readTime: '5 min read',
-        title: 'Maximizing ROI with the Expertise of a Digital Marketing Agency',
-        excerpt: 'What sets this digital marketing agency apart is their commitment to transparency a...',
-        filled: false,
-    },
-];
+import { useBlog } from '@/context/BlogContext';
 
 export default function Blog() {
+    const { posts } = useBlog();
     return (
         <section className="py-24 lg:py-32 bg-[#FFFFFF] section-wrapper relative overflow-hidden">
             <GeometricBackground pattern="waves" position="right" opacity={0.05} color="#4169E1" />
@@ -54,7 +30,7 @@ export default function Blog() {
 
                 {/* Articles Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {articles.map((article, idx) => (
+                    {posts.map((article, idx) => (
                         <div
                             key={article.id}
                             className="scroll-visible animate-fade-in-up bg-white rounded-[20px] p-8 flex flex-col gap-8"
@@ -82,12 +58,9 @@ export default function Blog() {
                                 </p>
                                 <Link
                                     href="#"
-                                    className={`w-[56px] h-[56px] lg:w-[88px] lg:h-[56px] rounded-full flex items-center justify-center transition-all flex-shrink-0 ${article.filled
-                                        ? 'bg-[#010205] text-white hover:bg-black/80'
-                                        : 'border border-[#010205] hover:bg-[#010205] hover:text-white'
-                                        }`}
+                                    className="w-[56px] h-[56px] lg:w-[88px] lg:h-[56px] rounded-full flex items-center justify-center transition-all flex-shrink-0 border border-[#010205] hover:bg-[#010205] hover:text-white"
                                 >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={article.filled ? 'white' : 'currentColor'} strokeWidth="2">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:stroke-white">
                                         <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </Link>

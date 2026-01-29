@@ -2,27 +2,29 @@
 
 import React from 'react';
 import ScrollReveal from './ScrollReveal';
-import { useSiteData } from '@/context/SiteDataContext';
 
-export default function Team() {
-    const { teamMembers, isLoaded } = useSiteData();
+interface TeamMember {
+    id: string;
+    name: string;
+    role: string;
+    image: string;
+    imageUrl?: string; // Handle both
+    bgColor?: string;
+}
 
-    if (!isLoaded) {
-        return (
-            <section id="team" className="py-24 lg:py-32 bg-white section-wrapper">
-                <div className="container-custom">
-                    <div className="animate-pulse">
-                        <div className="h-12 bg-gray-200 rounded w-1/3 mx-auto mb-16" />
-                        <div className="flex justify-center gap-8">
-                            {[...Array(4)].map((_, i) => (
-                                <div key={i} className="w-64 h-80 bg-gray-200 rounded-3xl" />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
-        );
-    }
+interface TeamProps {
+    teamMembers?: TeamMember[];
+}
+
+export default function Team({ teamMembers = [] }: TeamProps) {
+    // If no data is passed (e.g. loading or empty), we can show skeletons or return null
+    // But since we will fetch on server, we expect data.
+    // Normalized members for render
+    const members = teamMembers.map(m => ({
+        ...m,
+        image: m.imageUrl || m.image, // Prefer imageUrl if consistent with DB
+        id: m.id
+    }));
 
     return (
         <section id="team" className="py-24 lg:py-32 bg-white section-wrapper overflow-hidden">
@@ -39,13 +41,13 @@ export default function Team() {
 
                 {/* Team Grid */}
                 <div className="scroll-visible animate-fade-in-up delay-200 flex flex-wrap justify-center gap-8 lg:gap-12">
-                    {teamMembers.length === 0 ? (
+                    {members.length === 0 ? (
                         <div className="text-center py-16">
                             <p className="text-gray-400 text-lg">No team members added yet.</p>
                             <p className="text-gray-300 text-sm mt-2">Add members from the admin panel.</p>
                         </div>
                     ) : (
-                        teamMembers.map((member, index) => (
+                        members.map((member, index) => (
                             <div
                                 key={member.id}
                                 className="group flex flex-col items-center"

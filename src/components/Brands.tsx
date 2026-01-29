@@ -1,14 +1,26 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import GeometricBackground from './GeometricBackground';
 import ScrollReveal from './ScrollReveal';
 
-import { useBrands } from '@/context/BrandsContext';
+interface Brand {
+    id: string;
+    name: string;
+    image: string;
+    imageUrl?: string;
+}
 
-export default function Brands() {
-    const { brands } = useBrands();
+interface BrandsProps {
+    brands?: Brand[];
+}
+
+export default function Brands({ brands = [] }: BrandsProps) {
+    // Normalization if needed, though simple map works
+    const brandList = brands.map(b => ({
+        ...b,
+        image: b.imageUrl || b.image
+    }));
     return (
         <section className="py-20 lg:py-32 bg-white relative overflow-hidden section-wrapper">
             {/* Geometric Background Shape - Subtle */}
@@ -27,7 +39,7 @@ export default function Brands() {
                     <div className="flex gap-12 md:gap-24 overflow-hidden py-10">
                         {/* First Loop */}
                         <div className="flex gap-12 md:gap-24 animate-marquee min-w-full items-center justify-around">
-                            {brands.map((brand, idx) => (
+                            {brandList.map((brand, idx) => (
                                 <div key={`${brand.id}-1`} className="flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
                                     <div className="relative w-12 h-12 md:w-20 md:h-20 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
                                         <img
@@ -41,7 +53,7 @@ export default function Brands() {
                         </div>
                         {/* Second Loop (Duplicate for seamless scroll) */}
                         <div className="flex gap-12 md:gap-24 animate-marquee min-w-full items-center justify-around" aria-hidden="true">
-                            {brands.map((brand, idx) => (
+                            {brandList.map((brand, idx) => (
                                 <div key={`${brand.id}-2`} className="flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
                                     <div className="relative w-12 h-12 md:w-20 md:h-20 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
                                         <img
