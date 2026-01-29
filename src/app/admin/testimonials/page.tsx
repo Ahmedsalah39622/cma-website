@@ -38,7 +38,7 @@ export default function AdminTestimonialsPage() {
         setLoading(true);
         try {
             const data = await getTestimonials();
-            setTestimonials(data.map(d => ({
+            setTestimonials(data.map((d: any) => ({
                 id: d.id,
                 quote: d.quote || '',
                 author: d.author || '',
