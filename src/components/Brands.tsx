@@ -36,12 +36,12 @@ export default function Brands({ brands = [] }: BrandsProps) {
 
                 <div className="relative fade-mask-x pause-on-hover group">
                     {/* Marquee Container */}
-                    <div className="flex gap-12 md:gap-24 overflow-hidden py-10">
+                    <div className="flex gap-16 md:gap-32 overflow-hidden py-10">
                         {/* First Loop */}
-                        <div className="flex gap-12 md:gap-24 animate-marquee min-w-full items-center justify-around">
+                        <div className="flex gap-16 md:gap-32 animate-marquee min-w-full items-center">
                             {brandList.map((brand, idx) => (
-                                <div key={`${brand.id}-1`} className="flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
-                                    <div className="relative w-12 h-12 md:w-20 md:h-20 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
+                                <div key={`${brand.id}-1`} className="flex-shrink-0 flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
+                                    <div className="relative w-12 h-12 md:w-24 md:h-24 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
                                         <img
                                             src={brand.image}
                                             alt={brand.name}
@@ -52,10 +52,10 @@ export default function Brands({ brands = [] }: BrandsProps) {
                             ))}
                         </div>
                         {/* Second Loop (Duplicate for seamless scroll) */}
-                        <div className="flex gap-12 md:gap-24 animate-marquee min-w-full items-center justify-around" aria-hidden="true">
+                        <div className="flex gap-16 md:gap-32 animate-marquee min-w-full items-center" aria-hidden="true">
                             {brandList.map((brand, idx) => (
-                                <div key={`${brand.id}-2`} className="flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
-                                    <div className="relative w-12 h-12 md:w-20 md:h-20 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
+                                <div key={`${brand.id}-2`} className="flex-shrink-0 flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
+                                    <div className="relative w-12 h-12 md:w-24 md:h-24 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
                                         <img
                                             src={brand.image}
                                             alt={brand.name}
@@ -66,10 +66,10 @@ export default function Brands({ brands = [] }: BrandsProps) {
                             ))}
                         </div>
                         {/* Third Loop (To ensure coverage on large screens) */}
-                        <div className="flex gap-12 md:gap-24 animate-marquee min-w-full items-center justify-around" aria-hidden="true">
-                            {brands.map((brand, idx) => (
-                                <div key={`${brand.id}-3`} className="flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
-                                    <div className="relative w-12 h-12 md:w-20 md:h-20 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
+                        <div className="flex gap-16 md:gap-32 animate-marquee min-w-full items-center" aria-hidden="true">
+                            {brandList.map((brand, idx) => (
+                                <div key={`${brand.id}-3`} className="flex-shrink-0 flex flex-col items-center gap-4 group cursor-default select-none transition-transform hover:scale-110 duration-300">
+                                    <div className="relative w-12 h-12 md:w-24 md:h-24 filter grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
                                         <img
                                             src={brand.image}
                                             alt={brand.name}
