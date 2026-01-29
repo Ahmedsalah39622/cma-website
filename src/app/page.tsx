@@ -1,4 +1,6 @@
 import Header from '@/components/Header';
+// ... existing imports
+export const dynamic = 'force-dynamic';
 import Hero from '@/components/Hero';
 import Brands from '@/components/Brands';
 import Portfolio from '@/components/Portfolio';
