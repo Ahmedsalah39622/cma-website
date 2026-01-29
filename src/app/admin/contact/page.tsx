@@ -29,9 +29,9 @@ export default function AdminContactPage() {
                 getContactInfo(),
                 getContactSubmissions()
             ]);
-            setContactInfo(info);
-            setFormData(info);
-            setContactSubmissions(submissions || []);
+            setContactInfo(info as any);
+            setFormData(info as any);
+            setContactSubmissions((submissions as any) || []);
         } catch (err) {
             console.error('Failed to load contact data', err);
         } finally {

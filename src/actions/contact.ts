@@ -40,7 +40,7 @@ export async function updateContactInfo(info: any) {
                 target: siteSettings.key,
                 set: { value: info }
             });
-        revalidateTag('contact');
+        (revalidateTag as any)('contact');
     } catch (error) {
         console.error('Error updating contact info:', error);
         throw error;
@@ -78,7 +78,7 @@ export async function markSubmissionRead(id: string) {
         await db.update(contactSubmissions)
             .set({ read: true })
             .where(eq(contactSubmissions.id, id));
-        revalidateTag('contact');
+        (revalidateTag as any)('contact');
     } catch (error) {
         console.error('Error marking submission read:', error);
         throw error;
@@ -88,7 +88,7 @@ export async function markSubmissionRead(id: string) {
 export async function deleteSubmission(id: string) {
     try {
         await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
-        revalidateTag('contact');
+        (revalidateTag as any)('contact');
     } catch (error) {
         console.error('Error deleting submission:', error);
         throw error;

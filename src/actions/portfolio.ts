@@ -65,7 +65,7 @@ export async function saveProject(data: any) {
         } else {
             await db.insert(projects).values(dbData);
         }
-        revalidateTag('portfolio');
+        (revalidateTag as any)('portfolio');
         return { success: true };
     } catch (error) {
         console.error('Error saving project:', error);
@@ -76,7 +76,7 @@ export async function saveProject(data: any) {
 export async function deleteProject(id: string) {
     try {
         await db.delete(projects).where(eq(projects.id, id));
-        revalidateTag('portfolio');
+        (revalidateTag as any)('portfolio');
     } catch (error) {
         console.error('Error deleting project:', error);
         throw error;

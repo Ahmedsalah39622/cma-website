@@ -51,7 +51,7 @@ export async function updateSectionVisibility(visibility: any) {
                 target: siteSettings.key,
                 set: { value: visibility }
             });
-        revalidateTag('site-settings');
+        (revalidateTag as any)('site-settings');
         return { success: true };
     } catch (error) {
         console.error('Error updating section visibility:', error);

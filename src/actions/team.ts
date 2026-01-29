@@ -38,7 +38,7 @@ export async function saveTeamMember(data: any) {
         } else {
             await db.insert(teamMembers).values(dbData);
         }
-        revalidateTag('team');
+        (revalidateTag as any)('team');
         return { success: true };
     } catch (error) {
         console.error('Error saving team member:', error);
@@ -49,7 +49,7 @@ export async function saveTeamMember(data: any) {
 export async function deleteTeamMember(id: string) {
     try {
         await db.delete(teamMembers).where(eq(teamMembers.id, id));
-        revalidateTag('team');
+        (revalidateTag as any)('team');
     } catch (error) {
         console.error('Error deleting team member:', error);
         throw error;

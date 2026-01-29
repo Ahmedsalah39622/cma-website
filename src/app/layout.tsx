@@ -23,6 +23,18 @@ export const metadata: Metadata = {
     title: "CMA - Creative Marketing Agency",
     description: "Transform your brand with data-driven strategies and creative excellence",
     type: "website",
+    images: [
+      {
+        url: '/logo-big-hatchedwhite.png',
+        width: 1200,
+        height: 630,
+        alt: 'CMA - Creative Marketing Agency',
+      },
+    ],
+  },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
 };
 import { Analytics } from "@vercel/analytics/react";

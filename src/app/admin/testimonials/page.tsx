@@ -40,9 +40,9 @@ export default function AdminTestimonialsPage() {
             const data = await getTestimonials();
             setTestimonials(data.map(d => ({
                 id: d.id,
-                quote: d.quote,
-                author: d.author,
-                role: d.role,
+                quote: d.quote || '',
+                author: d.author || '',
+                role: d.role || '',
                 image: d.imageUrl || '',
             })));
         } catch (error) {

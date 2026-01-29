@@ -60,7 +60,7 @@ export async function saveFaq(data: any) {
         } else {
             await db.insert(faqs).values({ question: rest.question, answer: rest.answer });
         }
-        revalidateTag('faqs');
+        (revalidateTag as any)('faqs');
         return { success: true };
     } catch (error) {
         console.error('Error saving FAQ:', error);
@@ -71,7 +71,7 @@ export async function saveFaq(data: any) {
 export async function deleteFaq(id: string) {
     try {
         await db.delete(faqs).where(eq(faqs.id, id));
-        revalidateTag('faqs');
+        (revalidateTag as any)('faqs');
     } catch (error) {
         console.error('Error deleting FAQ:', error);
         throw error;

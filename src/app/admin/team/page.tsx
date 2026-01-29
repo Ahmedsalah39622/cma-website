@@ -59,9 +59,9 @@ export default function AdminTeamPage() {
             const data = await getTeamMembers();
             const formatted = (data || []).map((m: any) => ({
                 id: m.id,
-                name: m.name,
-                role: m.role,
-                image: m.imageUrl || m.image_url || m.image, // Handle Drizzle camelCase or potential inputs
+                name: m.name || '',
+                role: m.role || '',
+                image: m.imageUrl || m.image_url || m.image || '',
                 bgColor: m.bgColor || m.bg_color || '#FFE4C4'
             }));
             setTeamMembers(formatted);

@@ -67,7 +67,7 @@ export async function saveService(data: any) {
         } else {
             await db.insert(services).values(dbData);
         }
-        revalidateTag('services');
+        (revalidateTag as any)('services');
         return { success: true };
     } catch (error) {
         console.error('Error saving service:', error);
@@ -78,7 +78,7 @@ export async function saveService(data: any) {
 export async function deleteService(id: string) {
     try {
         await db.delete(services).where(eq(services.id, id));
-        revalidateTag('services');
+        (revalidateTag as any)('services');
     } catch (error) {
         console.error('Error deleting service:', error);
         throw error;
@@ -109,7 +109,7 @@ export async function updateServiceSettings(settings: { count: number, optionsTe
                 target: siteSettings.key,
                 set: { value: settings }
             });
-        revalidateTag('services');
+        (revalidateTag as any)('services');
     } catch (error) {
         console.error('Error updating settings:', error);
         throw error;

@@ -38,7 +38,7 @@ export async function saveTestimonial(data: any) {
         } else {
             await db.insert(testimonials).values(dbData);
         }
-        revalidateTag('testimonials');
+        (revalidateTag as any)('testimonials');
         return { success: true };
     } catch (error) {
         console.error('Error saving testimonial:', error);
@@ -49,7 +49,7 @@ export async function saveTestimonial(data: any) {
 export async function deleteTestimonial(id: string) {
     try {
         await db.delete(testimonials).where(eq(testimonials.id, id));
-        revalidateTag('testimonials');
+        (revalidateTag as any)('testimonials');
     } catch (error) {
         console.error('Error deleting testimonial:', error);
         throw error;

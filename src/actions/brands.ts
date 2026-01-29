@@ -36,7 +36,7 @@ export async function saveBrand(data: any) {
         } else {
             await db.insert(brands).values(dbData);
         }
-        revalidateTag('brands');
+        (revalidateTag as any)('brands');
         return { success: true };
     } catch (error) {
         console.error('Error saving brand:', error);
@@ -47,7 +47,7 @@ export async function saveBrand(data: any) {
 export async function deleteBrand(id: string) {
     try {
         await db.delete(brands).where(eq(brands.id, id));
-        revalidateTag('brands');
+        (revalidateTag as any)('brands');
     } catch (error) {
         console.error('Error deleting brand:', error);
         throw error;

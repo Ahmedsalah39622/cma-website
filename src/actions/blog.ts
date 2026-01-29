@@ -75,7 +75,7 @@ export async function saveBlogPost(data: any) {
         } else {
             await db.insert(blogPosts).values(dbData);
         }
-        revalidateTag('blog');
+        (revalidateTag as any)('blog');
         return { success: true };
     } catch (error) {
         console.error('Error saving blog post:', error);
@@ -86,7 +86,7 @@ export async function saveBlogPost(data: any) {
 export async function deleteBlogPost(id: string) {
     try {
         await db.delete(blogPosts).where(eq(blogPosts.id, id));
-        revalidateTag('blog');
+        (revalidateTag as any)('blog');
     } catch (error) {
         console.error('Error deleting blog post:', error);
         throw error;

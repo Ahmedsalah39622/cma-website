@@ -85,9 +85,9 @@ export default function AdminPortfolioPage() {
             const data = await getProjects();
             const formatted = (data || []).map((p: any) => ({
                 id: p.id,
-                title: p.title,
-                company: p.company,
-                category: p.category,
+                title: p.title || '',
+                company: p.company || '',
+                category: p.category || 'UI/UX Design',
                 image: p.imageUrl || p.image || '',
                 year: p.year?.toString() || '',
                 description: p.description || '',
