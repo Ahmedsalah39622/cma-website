@@ -104,22 +104,30 @@ function setStoredItems(items: PortfolioItem[]): void {
     }
 }
 
-export function PortfolioProvider({ children }: { children: ReactNode }) {
-    // Initialize with default items, then hydrate from localStorage
-    const [items, setItems] = useState<PortfolioItem[]>(defaultItems);
-    const [isLoaded, setIsLoaded] = useState(false);
+interface PortfolioProviderProps {
+    children: ReactNode;
+    initialItems?: PortfolioItem[];
+}
+
+export function PortfolioProvider({ children, initialItems = [] }: PortfolioProviderProps) {
+    // Initialize with server items if provided, otherwise default items
+    const [items, setItems] = useState<PortfolioItem[]>(initialItems.length > 0 ? initialItems : defaultItems);
+    const [isLoaded, setIsLoaded] = useState(initialItems.length > 0);
 
     // Hydrate from localStorage on mount - this is fast!
     useEffect(() => {
-        const stored = getStoredItems();
-        if (stored && stored.length > 0) {
-            setItems(stored);
-        } else {
-            // First time: save defaults to localStorage
-            setStoredItems(defaultItems);
+        // Only load from localStorage if we don't have server-side data
+        if (initialItems.length === 0) {
+            const stored = getStoredItems();
+            if (stored && stored.length > 0) {
+                setItems(stored);
+            } else {
+                // First time: save defaults to localStorage
+                setStoredItems(defaultItems);
+            }
         }
         setIsLoaded(true);
-    }, []);
+    }, [initialItems]);
 
     // Extract unique categories from items
     const categories = React.useMemo(() => {

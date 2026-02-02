@@ -1,58 +1,75 @@
 'use server';
 
-import { db } from '@/db';
-import { blogPosts } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { unstable_cache } from 'next/cache';
+
+// Default fallback blog posts when DB is unavailable
+const fallbackPosts = [
+    {
+        id: 'fallback-1',
+        title: 'How a Digital Marketing Agency Can Boost Your Business',
+        excerpt: 'We are the top digital marketing agency for branding corp. We offer a full range of services...',
+        color: '#45A7DE',
+        readTime: '5 min read',
+        content: '',
+        imageUrl: '',
+        createdAt: new Date(),
+    },
+];
+
+const mapBlog = (p: any) => ({
+    id: p.id,
+    title: p.title,
+    excerpt: p.excerpt,
+    color: p.color,
+    readTime: p.read_time,
+    content: p.content,
+    imageUrl: p.image_url,
+    createdAt: p.created_at,
+});
 
 // Cached Read
 export const getBlogPosts = unstable_cache(
     async () => {
         try {
-            const data = await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+            const { data, error } = await supabase
+                .from('blog_posts')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
 
             // Seed if empty
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 const defaultPosts = [
                     {
                         title: 'How a Digital Marketing Agency Can Boost Your Business',
-                        excerpt: 'We are the top digital marketing agency for branding corp. We offer a full rang engine ....',
+                        excerpt: 'We are the top digital marketing agency for branding corp...',
                         color: '#45A7DE',
-                        readTime: '5 min read',
+                        read_time: '5 min read',
                         content: '',
-                        imageUrl: '',
-                    },
-                    {
-                        title: 'The Latest Trends and Strategies with a Digital Marketing Agency',
-                        excerpt: 'Working with this digital marketing agency has been a true partnership. They have tak...',
-                        color: '#EA5F38',
-                        readTime: '5 min read',
-                        content: '',
-                        imageUrl: '',
-                    },
-                    {
-                        title: 'Maximizing ROI with the Expertise of a Digital Marketing Agency',
-                        excerpt: 'What sets this digital marketing agency apart is their commitment to transparency a...',
-                        color: '#6A26F1',
-                        readTime: '5 min read',
-                        content: '',
-                        imageUrl: '',
+                        image_url: '',
                     },
                 ];
 
-                await db.insert(blogPosts).values(defaultPosts);
-                return await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+                const { data: seeded, error: seedError } = await supabase
+                    .from('blog_posts')
+                    .insert(defaultPosts)
+                    .select();
+
+                if (seedError) throw seedError;
+                return (seeded || []).map(mapBlog);
             }
 
-            return data;
+            return data.map(mapBlog);
         } catch (error) {
             console.error('Error fetching blog posts:', error);
-            return [];
+            return fallbackPosts;
         }
     },
     ['blog-posts-list'],
-    { tags: ['blog'] }
+    { tags: ['blog'], revalidate: 60 }
 );
 
 export async function saveBlogPost(data: any) {
@@ -62,18 +79,23 @@ export async function saveBlogPost(data: any) {
         title: rest.title,
         excerpt: rest.excerpt,
         color: rest.color,
-        readTime: rest.readTime,
+        read_time: rest.readTime,
         content: rest.content,
-        imageUrl: rest.imageUrl || rest.image_url
+        image_url: rest.imageUrl || rest.image_url
     };
 
     try {
         if (id) {
-            await db.update(blogPosts)
-                .set(dbData)
-                .where(eq(blogPosts.id, id));
+            const { error } = await supabase
+                .from('blog_posts')
+                .update(dbData)
+                .eq('id', id);
+            if (error) throw error;
         } else {
-            await db.insert(blogPosts).values(dbData);
+            const { error } = await supabase
+                .from('blog_posts')
+                .insert(dbData);
+            if (error) throw error;
         }
         (revalidateTag as any)('blog');
         return { success: true };
@@ -85,7 +107,11 @@ export async function saveBlogPost(data: any) {
 
 export async function deleteBlogPost(id: string) {
     try {
-        await db.delete(blogPosts).where(eq(blogPosts.id, id));
+        const { error } = await supabase
+            .from('blog_posts')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         (revalidateTag as any)('blog');
     } catch (error) {
         console.error('Error deleting blog post:', error);

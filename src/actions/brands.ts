@@ -1,23 +1,39 @@
 'use server';
 
-import { db } from '@/db';
-import { brands } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { unstable_cache } from 'next/cache';
+
+// Default fallback brands
+const fallbackBrands = [
+    { id: 'fallback-1', name: 'Almarai', imageUrl: '/brands/almarai.png', createdAt: new Date() },
+];
+
+const mapBrand = (b: any) => ({
+    id: b.id,
+    name: b.name,
+    imageUrl: b.image_url,
+    createdAt: b.created_at,
+});
 
 // Cached Read
 export const getBrands = unstable_cache(
     async () => {
         try {
-            return await db.select().from(brands).orderBy(asc(brands.createdAt));
+            const { data, error } = await supabase
+                .from('brands')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return (data || []).map(mapBrand);
         } catch (error) {
             console.error('Error fetching brands:', error);
-            return [];
+            return fallbackBrands;
         }
     },
     ['brands-list'],
-    { tags: ['brands'] }
+    { tags: ['brands'], revalidate: 60 }
 );
 
 export async function saveBrand(data: any) {
@@ -25,16 +41,21 @@ export async function saveBrand(data: any) {
 
     const dbData = {
         name: rest.name,
-        imageUrl: rest.imageUrl || rest.image_url || rest.image
+        image_url: rest.imageUrl || rest.image
     };
 
     try {
         if (id) {
-            await db.update(brands)
-                .set(dbData)
-                .where(eq(brands.id, id));
+            const { error } = await supabase
+                .from('brands')
+                .update(dbData)
+                .eq('id', id);
+            if (error) throw error;
         } else {
-            await db.insert(brands).values(dbData);
+            const { error } = await supabase
+                .from('brands')
+                .insert(dbData);
+            if (error) throw error;
         }
         (revalidateTag as any)('brands');
         return { success: true };
@@ -46,7 +67,11 @@ export async function saveBrand(data: any) {
 
 export async function deleteBrand(id: string) {
     try {
-        await db.delete(brands).where(eq(brands.id, id));
+        const { error } = await supabase
+            .from('brands')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         (revalidateTag as any)('brands');
     } catch (error) {
         console.error('Error deleting brand:', error);

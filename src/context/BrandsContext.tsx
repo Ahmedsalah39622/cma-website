@@ -47,17 +47,25 @@ function setStoredBrands(brands: BrandItem[]): void {
     }
 }
 
-export function BrandsProvider({ children }: { children: ReactNode }) {
-    const [brands, setBrands] = useState<BrandItem[]>(defaultBrands);
-    const [isLoaded, setIsLoaded] = useState(false);
+interface BrandsProviderProps {
+    children: ReactNode;
+    initialBrands?: BrandItem[];
+}
+
+export function BrandsProvider({ children, initialBrands = [] }: BrandsProviderProps) {
+    const [brands, setBrands] = useState<BrandItem[]>(initialBrands.length > 0 ? initialBrands : defaultBrands);
+    const [isLoaded, setIsLoaded] = useState(initialBrands.length > 0);
 
     useEffect(() => {
-        const stored = getStoredBrands();
-        if (stored) {
-            setBrands(stored);
+        // Only load from localStorage if we don't have server-side data
+        if (initialBrands.length === 0) {
+            const stored = getStoredBrands();
+            if (stored && stored.length > 0) {
+                setBrands(stored);
+            }
         }
         setIsLoaded(true);
-    }, []);
+    }, [initialBrands]);
 
     const addBrand = useCallback((brand: Omit<BrandItem, 'id'>) => {
         const newBrand: BrandItem = {

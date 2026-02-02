@@ -1,71 +1,86 @@
 'use server';
 
-import { db } from '@/db';
-import { services, siteSettings } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { unstable_cache } from 'next/cache';
 
-// Cached Read
+// Default fallback services
+const fallbackServices = [
+    { id: 'fallback-1', title: 'Web & Mobile Development', count: '40 options available', iconType: 'code', createdAt: new Date() },
+    { id: 'fallback-2', title: 'Marketing & Communication', count: '27 options available', iconType: 'marketing', createdAt: new Date() },
+];
+
+const mapService = (s: any) => ({
+    id: s.id,
+    title: s.title,
+    count: s.count,
+    iconType: s.icon_type,
+    createdAt: s.created_at,
+});
+
 // Cached Read
 export const getServices = unstable_cache(
     async () => {
         try {
-            const data = await db.select().from(services).orderBy(asc(services.createdAt));
+            const { data, error } = await supabase
+                .from('services')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
 
             // Seed if empty
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 const defaultServices = [
-                    { title: 'Project Management', count: '30 options available', iconType: 'grid' },
-                    { title: 'Web & Mobile Development', count: '40 options available', iconType: 'code' },
-                    { title: 'Customer Support', count: '17 options available', iconType: 'support' },
-                    { title: 'Human Resources', count: '21 options available', iconType: 'users' },
-                    { title: 'Design & Creatives', count: '13 options available', iconType: 'design' },
-                    { title: 'Marketing & Communication', count: '27 options available', iconType: 'marketing' },
-                    { title: 'Business Development', count: '22 options available', iconType: 'business' },
+                    { title: 'Project Management', count: '30 options available', icon_type: 'grid' },
+                    { title: 'Web & Mobile Development', count: '40 options available', icon_type: 'code' },
+                    { title: 'Customer Support', count: '17 options available', icon_type: 'support' },
+                    { title: 'Human Resources', count: '21 options available', icon_type: 'users' },
+                    { title: 'Design & Creatives', count: '13 options available', icon_type: 'design' },
+                    { title: 'Marketing & Communication', count: '27 options available', icon_type: 'marketing' },
+                    { title: 'Business Development', count: '22 options available', icon_type: 'business' },
                 ];
 
-                // Insert defaults
-                await db.insert(services).values(defaultServices.map(s => ({
-                    title: s.title,
-                    count: s.count,
-                    iconType: s.iconType
-                })));
+                const { data: seeded, error: seedError } = await supabase
+                    .from('services')
+                    .insert(defaultServices)
+                    .select();
 
-                // Re-fetch to get IDs
-                const seededData = await db.select().from(services).orderBy(asc(services.createdAt));
-                return seededData;
+                if (seedError) throw seedError;
+                return (seeded || []).map(mapService);
             }
 
-            return data;
+            return data.map(mapService);
         } catch (error) {
             console.error('Error fetching services:', error);
-            return [];
+            return fallbackServices;
         }
     },
     ['services-list'],
-    { tags: ['services'] }
+    { tags: ['services'], revalidate: 60 }
 );
 
 export async function saveService(data: any) {
     const { id, ...rest } = data;
 
-    // UI expects/sends: title, count, iconType
-    // DB: title, count, icon_type
-
     const dbData = {
         title: rest.title,
         count: rest.count,
-        iconType: rest.iconType || rest.icon_type // Drizzle schema uses camelCase properties for TS, mapped to snake_case cols
+        icon_type: rest.iconType || rest.icon_type
     };
 
     try {
         if (id) {
-            await db.update(services)
-                .set(dbData)
-                .where(eq(services.id, id));
+            const { error } = await supabase
+                .from('services')
+                .update(dbData)
+                .eq('id', id);
+            if (error) throw error;
         } else {
-            await db.insert(services).values(dbData);
+            const { error } = await supabase
+                .from('services')
+                .insert(dbData);
+            if (error) throw error;
         }
         (revalidateTag as any)('services');
         return { success: true };
@@ -77,7 +92,11 @@ export async function saveService(data: any) {
 
 export async function deleteService(id: string) {
     try {
-        await db.delete(services).where(eq(services.id, id));
+        const { error } = await supabase
+            .from('services')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         (revalidateTag as any)('services');
     } catch (error) {
         console.error('Error deleting service:', error);
@@ -89,26 +108,28 @@ export async function deleteService(id: string) {
 export const getServiceSettings = unstable_cache(
     async () => {
         try {
-            const setting = await db.query.siteSettings.findFirst({
-                where: eq(siteSettings.key, 'services_more')
-            });
-            return setting?.value || { count: 0, optionsText: 'More Options' }; // Default 0
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('*')
+                .eq('key', 'services_more')
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error; // PGRST116 is 'no rows returned'
+            return data?.value || { count: 0, optionsText: 'More Options' };
         } catch (error) {
-            return { count: 0, optionsText: 'More Options' }; // Default 0
+            return { count: 0, optionsText: 'More Options' };
         }
     },
     ['services-settings'],
-    { tags: ['services'] }
+    { tags: ['services'], revalidate: 60 }
 );
 
 export async function updateServiceSettings(settings: { count: number, optionsText: string }) {
     try {
-        await db.insert(siteSettings)
-            .values({ key: 'services_more', value: settings })
-            .onConflictDoUpdate({
-                target: siteSettings.key,
-                set: { value: settings }
-            });
+        const { error } = await supabase
+            .from('site_settings')
+            .upsert({ key: 'services_more', value: settings }, { onConflict: 'key' });
+        if (error) throw error;
         (revalidateTag as any)('services');
     } catch (error) {
         console.error('Error updating settings:', error);

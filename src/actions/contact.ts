@@ -1,46 +1,52 @@
 'use server';
 
 import { db } from '@/db';
-import { contactSubmissions, siteSettings } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
-import { revalidateTag } from 'next/cache';
-import { unstable_cache } from 'next/cache';
+import { supabase } from '@/lib/supabase';
+import { revalidateTag, unstable_cache } from 'next/cache';
 
-// Contact Info (stored in site_settings)
+// Cached Read for contact info
 export const getContactInfo = unstable_cache(
     async () => {
         try {
-            const setting = await db.query.siteSettings.findFirst({
-                where: eq(siteSettings.key, 'contact_info')
-            });
-            return setting?.value || {
-                email: 'info@cma.com',
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('*')
+                .eq('key', 'contact_info')
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            const defaultContact = {
+                email: 'contact@example.com',
                 phone: '+1 234 567 890',
-                address: '123 Creative St',
-                addressLine2: 'Design City, DC 12345'
+                address: '123 Business St, Creative City',
+                addressLine2: 'Suite 100'
             };
+
+            return data?.value || defaultContact;
         } catch (error) {
+            console.error('Error fetching contact info:', error);
             return {
-                email: 'info@cma.com',
-                phone: '',
-                address: '',
-                addressLine2: ''
+                email: 'contact@example.com',
+                phone: '+1 234 567 890',
+                address: '123 Business St, Creative City',
+                addressLine2: 'Suite 100'
             };
         }
     },
     ['contact-info'],
-    { tags: ['contact'] }
+    { tags: ['contact'], revalidate: 60 }
 );
 
 export async function updateContactInfo(info: any) {
     try {
-        await db.insert(siteSettings)
-            .values({ key: 'contact_info', value: info })
-            .onConflictDoUpdate({
-                target: siteSettings.key,
-                set: { value: info }
-            });
+        const { error } = await supabase
+            .from('site_settings')
+            .upsert({ key: 'contact_info', value: info }, { onConflict: 'key' });
+
+        if (error) throw error;
         (revalidateTag as any)('contact');
+        return { success: true };
     } catch (error) {
         console.error('Error updating contact info:', error);
         throw error;
@@ -48,47 +54,49 @@ export async function updateContactInfo(info: any) {
 }
 
 // Submissions
-export async function getContactSubmissions() {
+export async function submitContact(data: any) {
     try {
-        return await db.select().from(contactSubmissions).orderBy(desc(contactSubmissions.submittedAt));
-    } catch (error) {
-        console.error('Error fetching submissions:', error);
-        return [];
-    }
-}
+        const { error } = await supabase
+            .from('contact_submissions')
+            .insert({
+                name: data.name,
+                email: data.email,
+                website: data.website,
+                message: data.message
+            });
 
-export async function submitContact(formData: any) {
-    try {
-        await db.insert(contactSubmissions).values({
-            name: formData.name,
-            email: formData.email,
-            website: formData.website,
-            message: formData.message,
-            submittedAt: new Date(),
-            read: false
-        });
+        if (error) throw error;
+        return { success: true };
     } catch (error) {
         console.error('Error submitting contact form:', error);
         throw error;
     }
 }
 
-export async function markSubmissionRead(id: string) {
+export async function getContactSubmissions() {
     try {
-        await db.update(contactSubmissions)
-            .set({ read: true })
-            .where(eq(contactSubmissions.id, id));
-        (revalidateTag as any)('contact');
+        const { data, error } = await supabase
+            .from('contact_submissions')
+            .select('*')
+            .order('submitted_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
-        console.error('Error marking submission read:', error);
-        throw error;
+        console.error('Error fetching submissions:', error);
+        return [];
     }
 }
 
 export async function deleteSubmission(id: string) {
     try {
-        await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id));
-        (revalidateTag as any)('contact');
+        const { error } = await supabase
+            .from('contact_submissions')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        return { success: true };
     } catch (error) {
         console.error('Error deleting submission:', error);
         throw error;

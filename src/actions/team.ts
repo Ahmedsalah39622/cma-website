@@ -1,23 +1,39 @@
 'use server';
 
-import { db } from '@/db';
-import { teamMembers } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { unstable_cache } from 'next/cache';
+
+// Default fallback team
+const fallbackTeam: any[] = [];
+
+const mapTeam = (t: any) => ({
+    id: t.id,
+    name: t.name,
+    role: t.role,
+    imageUrl: t.image_url,
+    bgColor: t.bg_color,
+    createdAt: t.created_at,
+});
 
 // Cached Read
 export const getTeamMembers = unstable_cache(
     async () => {
         try {
-            return await db.select().from(teamMembers).orderBy(asc(teamMembers.createdAt));
+            const { data, error } = await supabase
+                .from('team_members')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return (data || []).map(mapTeam);
         } catch (error) {
             console.error('Error fetching team:', error);
-            return [];
+            return fallbackTeam;
         }
     },
     ['team-list'],
-    { tags: ['team'] }
+    { tags: ['team'], revalidate: 60 }
 );
 
 export async function saveTeamMember(data: any) {
@@ -26,17 +42,22 @@ export async function saveTeamMember(data: any) {
     const dbData = {
         name: rest.name,
         role: rest.role,
-        imageUrl: rest.imageUrl || rest.image_url || rest.image,
-        bgColor: rest.bgColor || rest.bg_color
+        image_url: rest.imageUrl || rest.image_url || rest.image,
+        bg_color: rest.bgColor || rest.bg_color
     };
 
     try {
         if (id) {
-            await db.update(teamMembers)
-                .set(dbData)
-                .where(eq(teamMembers.id, id));
+            const { error } = await supabase
+                .from('team_members')
+                .update(dbData)
+                .eq('id', id);
+            if (error) throw error;
         } else {
-            await db.insert(teamMembers).values(dbData);
+            const { error } = await supabase
+                .from('team_members')
+                .insert(dbData);
+            if (error) throw error;
         }
         (revalidateTag as any)('team');
         return { success: true };
@@ -48,7 +69,11 @@ export async function saveTeamMember(data: any) {
 
 export async function deleteTeamMember(id: string) {
     try {
-        await db.delete(teamMembers).where(eq(teamMembers.id, id));
+        const { error } = await supabase
+            .from('team_members')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         (revalidateTag as any)('team');
     } catch (error) {
         console.error('Error deleting team member:', error);

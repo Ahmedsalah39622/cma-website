@@ -1,17 +1,21 @@
 'use server';
 
-import { db } from '@/db';
-import { siteSettings } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag, unstable_cache } from 'next/cache';
 
+// Cached Read for section visibility
 export const getSectionVisibility = unstable_cache(
     async () => {
         try {
-            const setting = await db.query.siteSettings.findFirst({
-                where: eq(siteSettings.key, 'section_visibility')
-            });
-            return (setting?.value as any) || {
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('*')
+                .eq('key', 'section_visibility')
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            const defaultVisibility = {
                 hero: true,
                 brands: true,
                 portfolio: true,
@@ -23,6 +27,8 @@ export const getSectionVisibility = unstable_cache(
                 cta: true,
                 contact: true
             };
+
+            return data?.value || defaultVisibility;
         } catch (error) {
             console.error('Error fetching section visibility:', error);
             return {
@@ -40,61 +46,58 @@ export const getSectionVisibility = unstable_cache(
         }
     },
     ['section-visibility'],
-    { tags: ['site-settings'] }
+    { tags: ['settings'], revalidate: 60 }
 );
 
 export async function updateSectionVisibility(visibility: any) {
     try {
-        await db.insert(siteSettings)
-            .values({ key: 'section_visibility', value: visibility })
-            .onConflictDoUpdate({
-                target: siteSettings.key,
-                set: { value: visibility }
-            });
-        (revalidateTag as any)('site-settings');
+        const { error } = await supabase
+            .from('site_settings')
+            .upsert({ key: 'section_visibility', value: visibility }, { onConflict: 'key' });
+
+        if (error) throw error;
+        (revalidateTag as any)('settings');
         return { success: true };
     } catch (error) {
-        console.error('Error updating section visibility:', error);
+        console.error('Error updating visibility:', error);
         throw error;
     }
 }
-const DEFAULT_CATEGORIES = [
-    'UI/UX Design',
-    'Digital Marketing',
-    'Branding',
-    'Web Development',
-    'Social Media',
-    'Video Production',
-];
 
+// Portfolio Categories
 export const getPortfolioCategories = unstable_cache(
     async () => {
         try {
-            const setting = await db.query.siteSettings.findFirst({
-                where: eq(siteSettings.key, 'portfolio_categories')
-            });
-            return (setting?.value as string[]) || DEFAULT_CATEGORIES;
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('*')
+                .eq('key', 'portfolio_categories')
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            const defaultCategories = ['Branding', 'Marketing', 'Development', 'Design'];
+            return data?.value || defaultCategories;
         } catch (error) {
             console.error('Error fetching portfolio categories:', error);
-            return DEFAULT_CATEGORIES;
+            return ['Branding', 'Marketing', 'Development', 'Design'];
         }
     },
     ['portfolio-categories'],
-    { tags: ['site-settings'] }
+    { tags: ['settings'], revalidate: 60 }
 );
 
 export async function updatePortfolioCategories(categories: string[]) {
     try {
-        await db.insert(siteSettings)
-            .values({ key: 'portfolio_categories', value: categories })
-            .onConflictDoUpdate({
-                target: siteSettings.key,
-                set: { value: categories }
-            });
-        (revalidateTag as any)('site-settings');
+        const { error } = await supabase
+            .from('site_settings')
+            .upsert({ key: 'portfolio_categories', value: categories }, { onConflict: 'key' });
+
+        if (error) throw error;
+        (revalidateTag as any)('settings');
         return { success: true };
     } catch (error) {
-        console.error('Error updating portfolio categories:', error);
+        console.error('Error updating categories:', error);
         throw error;
     }
 }

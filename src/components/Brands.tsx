@@ -16,11 +16,16 @@ interface BrandsProps {
 }
 
 export default function Brands({ brands = [] }: BrandsProps) {
-    // Normalization if needed, though simple map works
-    const brandList = brands.map(b => ({
-        ...b,
-        image: b.imageUrl || b.image
-    }));
+    // Normalization and filtering empty images
+    const brandList = brands
+        .filter(b => {
+            const img = b.imageUrl || b.image;
+            return img && img !== "";
+        })
+        .map(b => ({
+            ...b,
+            image: b.imageUrl || b.image
+        }));
     return (
         <section className="py-20 lg:py-32 bg-white relative overflow-hidden section-wrapper">
             {/* Geometric Background Shape - Subtle */}

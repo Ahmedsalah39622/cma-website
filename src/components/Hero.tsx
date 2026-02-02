@@ -51,7 +51,7 @@ const useCountUp = (end: number, duration: number = 2000) => {
 const Hero = () => {
     const { count, ref: countRef } = useCountUp(230, 2000);
     return (
-        <section className="bg-white pt-36 pb-28 relative overflow-hidden section-wrapper hero-offset">
+        <section className="bg-white pt-48 pb-28 relative overflow-hidden section-wrapper hero-offset">
             <GeometricBackground pattern="mesh" position="right" opacity={0.06} className="text-[#183B73]" />
             <div className="container-custom">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">

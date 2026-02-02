@@ -1,31 +1,94 @@
 'use server';
 
-import { db } from '@/db';
-import { projects } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { unstable_cache } from 'next/cache';
+
+// Default fallback projects when DB is unavailable
+const fallbackProjects = [
+    {
+        id: 'fallback-1',
+        title: 'Brand Identity Design',
+        company: 'Tech Startup',
+        category: 'Branding',
+        imageUrl: '/portfolio-placeholder.jpg',
+        year: '2024',
+        description: 'Complete brand identity design for a leading tech startup.',
+        link: '',
+        videoUrl: '',
+        videoType: '',
+        socialLinks: [],
+        gallery: [],
+        additionalVideos: [],
+        createdAt: new Date(),
+    },
+    {
+        id: 'fallback-2',
+        title: 'Social Media Campaign',
+        company: 'E-commerce Brand',
+        category: 'Marketing',
+        imageUrl: '/portfolio-placeholder.jpg',
+        year: '2024',
+        description: 'Successful social media marketing campaign.',
+        link: '',
+        videoUrl: '',
+        videoType: '',
+        socialLinks: [],
+        gallery: [],
+        additionalVideos: [],
+        createdAt: new Date(),
+    },
+];
+
+const mapProject = (p: any) => ({
+    id: p.id,
+    title: p.title,
+    company: p.company,
+    category: p.category,
+    imageUrl: p.image_url,
+    year: p.year,
+    description: p.description,
+    link: p.link,
+    videoUrl: p.video_url,
+    videoType: p.video_type,
+    socialLinks: p.social_links || [],
+    gallery: p.gallery || [],
+    additionalVideos: p.additional_videos || [],
+    createdAt: p.created_at,
+});
 
 // Cached Read
 export const getProjects = unstable_cache(
     async () => {
         try {
-            return await db.select().from(projects).orderBy(desc(projects.createdAt));
+            const { data, error } = await supabase
+                .from('projects')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return (data || []).map(mapProject);
         } catch (error) {
             console.error('Error fetching projects:', error);
-            return [];
+            return fallbackProjects;
         }
     },
     ['projects-list'],
-    { tags: ['portfolio'] }
+    { tags: ['portfolio'], revalidate: 60 }
 );
 
 export async function getProject(id: string) {
     return unstable_cache(
         async () => {
             try {
-                const result = await db.select().from(projects).where(eq(projects.id, id));
-                return result[0] || null;
+                const { data, error } = await supabase
+                    .from('projects')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+                return data ? mapProject(data) : null;
             } catch (error) {
                 console.error('Error fetching project:', error);
                 return null;
@@ -39,31 +102,33 @@ export async function getProject(id: string) {
 export async function saveProject(data: any) {
     const { id, ...rest } = data;
 
-    // UI: title, company, category, image, year, description, link, videoUrl, videoType, socialLinks, gallery, additionalVideos
-    // DB: camelCase in Drizzle schema
-
     const dbData = {
         title: rest.title,
         company: rest.company,
         category: rest.category,
-        imageUrl: rest.imageUrl || rest.image,
+        image_url: rest.imageUrl || rest.image,
         year: rest.year,
         description: rest.description,
         link: rest.link,
-        videoUrl: rest.videoUrl,
-        videoType: rest.videoType,
-        socialLinks: rest.socialLinks,
+        video_url: rest.videoUrl,
+        video_type: rest.videoType,
+        social_links: rest.socialLinks,
         gallery: rest.gallery,
-        additionalVideos: rest.additionalVideos
+        additional_videos: rest.additionalVideos
     };
 
     try {
         if (id) {
-            await db.update(projects)
-                .set(dbData)
-                .where(eq(projects.id, id));
+            const { error } = await supabase
+                .from('projects')
+                .update(dbData)
+                .eq('id', id);
+            if (error) throw error;
         } else {
-            await db.insert(projects).values(dbData);
+            const { error } = await supabase
+                .from('projects')
+                .insert(dbData);
+            if (error) throw error;
         }
         (revalidateTag as any)('portfolio');
         return { success: true };
@@ -75,7 +140,11 @@ export async function saveProject(data: any) {
 
 export async function deleteProject(id: string) {
     try {
-        await db.delete(projects).where(eq(projects.id, id));
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         (revalidateTag as any)('portfolio');
     } catch (error) {
         console.error('Error deleting project:', error);

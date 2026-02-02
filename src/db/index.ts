@@ -19,7 +19,10 @@ if (!queryClient) {
 const client = queryClient
     ? postgres(queryClient, {
         prepare: false,
-        ssl: isProduction ? 'require' : false,
+        ssl: { rejectUnauthorized: false },
+        max: 10,
+        idle_timeout: 20,
+        connect_timeout: 30,
     })
     : null;
 

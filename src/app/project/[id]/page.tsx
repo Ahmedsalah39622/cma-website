@@ -3,14 +3,21 @@ export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { getProject } from '@/actions/portfolio'; // Server Action
-import { PortfolioItem } from '@/context/PortfolioContext'; // Type definition
+import { PortfolioItem, usePortfolio } from '@/context/PortfolioContext'; // Type definition & Hook
 import GeometricBackground from '@/components/GeometricBackground';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
+    const searchParams = useSearchParams();
+    const isFromMobile = searchParams.get('from') === 'mobile';
+
+    // Client-side context for fallback
+    const { items: localProjects, isLoaded: isPortfolioLoaded } = usePortfolio();
+
     const [project, setProject] = useState<any | null>(null); // Use any to bridge DB/Context types or interface
     const [loading, setLoading] = useState(true);
     const [activeMedia, setActiveMedia] = useState<{
@@ -20,13 +27,19 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     } | null>(null);
 
     useEffect(() => {
+        let isMounted = true;
+
         async function loadProject() {
             setLoading(true);
             try {
+                // 1. Try fetching from Server (DB)
                 const data = await getProject(id);
+
+                if (!isMounted) return;
+
                 if (data) {
-                    console.log('Project data loaded:', data.id);
-                    // Normalize DB fields to UI fields
+                    // ... (Server Data Found)
+                    console.log('Project loaded from Server:', data.id);
                     setProject({
                         ...data,
                         image: data.imageUrl || (data as any).image || (data as any).imageUrl,
@@ -34,17 +47,55 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                         additionalVideos: Array.isArray(data.additionalVideos) ? data.additionalVideos : [],
                         socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : [],
                     });
+                    setLoading(false); // Success from Server
                 } else {
-                    console.error('Project not found for ID:', id);
+                    // 2. Fallback: Try fetching from Local Context
+                    console.warn('Project not found on Server, checking Local Storage...');
+
+                    // CRITICAL FIX: Only check local if portfolio is fully loaded
+                    if (!isPortfolioLoaded) {
+                        console.log('Waiting for portfolio hydration...');
+                        // Don't finish loading, wait for next render when isPortfolioLoaded becomes true
+                        return;
+                    }
+
+                    const localProject = localProjects.find(p => p.id === id);
+
+                    if (localProject) {
+                        console.log('Project loaded from Local Storage:', localProject.id);
+                        setProject({
+                            ...localProject,
+                            videoUrl: localProject.videoUrl || '',
+                            videoType: localProject.videoType || 'youtube',
+                            additionalVideos: localProject.additionalVideos || [],
+                            socialLinks: localProject.socialLinks || [],
+                            gallery: localProject.gallery || [],
+                            description: localProject.description || '',
+                        });
+                        setLoading(false); // Success from Local
+                    } else {
+                        console.error('Project not found locally for ID:', id);
+                        setProject(null);
+                        setLoading(false); // Failed both
+                    }
                 }
             } catch (err) {
                 console.error('Error in loadProject:', err);
-            } finally {
+                // Retry fallback on error
+                if (isPortfolioLoaded) {
+                    const localProject = localProjects.find(p => p.id === id);
+                    if (localProject)
+                        setProject(localProject);
+                    else
+                        setProject(null);
+                }
                 setLoading(false);
             }
         }
+
         loadProject();
-    }, [id]);
+        return () => { isMounted = false; };
+    }, [id, localProjects, isPortfolioLoaded]);
 
     if (loading) {
         return (
@@ -58,8 +109,26 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center text-black p-6">
                 <h1 className="text-4xl font-bold mb-4">Project Not Found</h1>
-                <Link href="/" className="px-6 py-3 bg-[#FFD700] text-black font-bold rounded-xl hover:bg-[#FFD700]/90 transition-all">
-                    Back to Home
+
+                {/* Debug Info */}
+                <div className="bg-slate-100 p-4 rounded-lg text-xs font-mono text-left max-w-md w-full mb-6 overflow-auto max-h-60 border border-slate-300">
+                    <p className="font-bold text-red-600 mb-2">DEBUG INFO:</p>
+                    <p>Requested ID: <span className="bg-yellow-200 px-1">{params && (params as any).id ? (params as any).id : id}</span></p>
+                    <p>Is Loaded: {isPortfolioLoaded ? 'YES' : 'NO'}</p>
+                    <p>Local Projects Count: {localProjects.length}</p>
+                    <hr className="my-2 border-slate-300" />
+                    <p className="font-bold mb-1">Available IDs:</p>
+                    <ul className="list-disc pl-4">
+                        {localProjects.map(p => (
+                            <li key={p.id} className={p.id === id ? "text-green-600 font-bold" : ""}>
+                                {p.id} <span className="text-slate-400">({p.title})</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <Link href="/mobile/portfolio" className="px-6 py-3 bg-[#FFD700] text-black font-bold rounded-xl hover:bg-[#FFD700]/90 transition-all">
+                    Back to Mobile Portfolio
                 </Link>
             </div>
         );
@@ -131,7 +200,20 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     return (
         <main className="min-h-screen bg-[#FFFFFF] text-[#0a0a14] selection:bg-[#FFD700] selection:text-black">
             {/* Global Header */}
-            <Header />
+            {!isFromMobile && <Header />}
+
+            {/* Mobile Back Button */}
+            {isFromMobile && (
+                <div className="fixed top-0 left-0 right-0 z-[100] bg-white/90 backdrop-blur-md border-b border-black/5 px-4 py-3 flex items-center justify-between shadow-sm">
+                    <Link
+                        href="/mobile/portfolio"
+                        className="flex items-center gap-2 text-slate-900 font-bold text-sm bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full transition-all"
+                    >
+                        <span>←</span> Back
+                    </Link>
+                    <span className="font-bold text-sm truncate max-w-[150px] text-slate-900">{project?.title}</span>
+                </div>
+            )}
 
             {/* Hero Section */}
             <section className="relative pb-24 overflow-hidden" style={{ paddingTop: '150px' }}>

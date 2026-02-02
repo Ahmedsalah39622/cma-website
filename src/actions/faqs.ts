@@ -1,52 +1,66 @@
 'use server';
 
-import { db } from '@/db';
-import { faqs } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { revalidateTag } from 'next/cache';
 import { unstable_cache } from 'next/cache';
+
+// Default fallback FAQs
+const fallbackFaqs = [
+    {
+        id: 'fallback-1',
+        question: 'How long does it take to see results from digital marketing efforts?',
+        answer: 'Results vary depending on the strategy. PPC can show immediate results, while SEO typically takes 3-6 months. We provide regular reports to track progress and adjust strategies accordingly.',
+        createdAt: new Date(),
+    },
+    {
+        id: 'fallback-2',
+        question: 'How do you measure the success of digital marketing campaigns?',
+        answer: 'We use comprehensive analytics including traffic metrics, conversion rates, ROI, engagement rates, and custom KPIs tailored to your specific business goals.',
+        createdAt: new Date(),
+    },
+];
 
 // Cached Read
 export const getFaqs = unstable_cache(
     async () => {
         try {
-            const data = await db.select().from(faqs).orderBy(asc(faqs.createdAt));
+            const { data, error } = await supabase
+                .from('faqs')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
 
             // Seed if empty
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 const defaultFaqs = [
                     {
                         question: 'Why is digital marketing important for my business?',
-                        answer: 'Digital marketing allows businesses to reach and engage with a wider audience, generate leads, drive website traffic, and increase brand visibility. It provides measurable results, allows for targeted marketing efforts, and enables businesses to adapt and optimize their strategies based on data and insights.',
+                        answer: 'Digital marketing allows businesses to reach and engage with a wider audience, generate leads, drive website traffic, and increase brand visibility.',
                     },
                     {
                         question: "How can digital marketing help improve my website's visibility?",
-                        answer: "Through SEO optimization, content marketing, social media engagement, and paid advertising, we can significantly improve your website's visibility in search results and across digital platforms.",
-                    },
-                    {
-                        question: 'How long does it take to see results from digital marketing efforts?',
-                        answer: 'Results vary depending on the strategy. PPC can show immediate results, while SEO typically takes 3-6 months. We provide regular reports to track progress and adjust strategies accordingly.',
-                    },
-                    {
-                        question: 'How do you measure the success of digital marketing campaigns?',
-                        answer: 'We use comprehensive analytics including traffic metrics, conversion rates, ROI, engagement rates, and custom KPIs tailored to your specific business goals.',
+                        answer: "Through SEO optimization, content marketing, social media engagement, and paid advertising, we can significantly improve your website's visibility.",
                     },
                 ];
 
-                await db.insert(faqs).values(defaultFaqs);
+                const { data: seeded, error: seedError } = await supabase
+                    .from('faqs')
+                    .insert(defaultFaqs)
+                    .select();
 
-                // Re-fetch to get IDs
-                return await db.select().from(faqs).orderBy(asc(faqs.createdAt));
+                if (seedError) throw seedError;
+                return seeded || [];
             }
 
             return data;
         } catch (error) {
             console.error('Error fetching FAQs:', error);
-            return [];
+            return fallbackFaqs;
         }
     },
     ['faqs-list'],
-    { tags: ['faqs'] }
+    { tags: ['faqs'], revalidate: 60 }
 );
 
 export async function saveFaq(data: any) {
@@ -54,11 +68,16 @@ export async function saveFaq(data: any) {
 
     try {
         if (id) {
-            await db.update(faqs)
-                .set({ question: rest.question, answer: rest.answer })
-                .where(eq(faqs.id, id));
+            const { error } = await supabase
+                .from('faqs')
+                .update({ question: rest.question, answer: rest.answer })
+                .eq('id', id);
+            if (error) throw error;
         } else {
-            await db.insert(faqs).values({ question: rest.question, answer: rest.answer });
+            const { error } = await supabase
+                .from('faqs')
+                .insert({ question: rest.question, answer: rest.answer });
+            if (error) throw error;
         }
         (revalidateTag as any)('faqs');
         return { success: true };
@@ -70,7 +89,11 @@ export async function saveFaq(data: any) {
 
 export async function deleteFaq(id: string) {
     try {
-        await db.delete(faqs).where(eq(faqs.id, id));
+        const { error } = await supabase
+            .from('faqs')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         (revalidateTag as any)('faqs');
     } catch (error) {
         console.error('Error deleting FAQ:', error);

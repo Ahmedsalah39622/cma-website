@@ -27,6 +27,19 @@ export interface ContactSubmission {
     read: boolean;
 }
 
+export interface Visibility {
+    hero: boolean;
+    brands: boolean;
+    portfolio: boolean;
+    services: boolean;
+    testimonials: boolean;
+    team: boolean;
+    faq: boolean;
+    blog: boolean;
+    cta: boolean;
+    contact: boolean;
+}
+
 interface SiteDataContextType {
     // Team
     teamMembers: TeamMember[];
@@ -44,6 +57,9 @@ interface SiteDataContextType {
     markSubmissionRead: (id: string) => void;
     deleteSubmission: (id: string) => void;
 
+    // Visibility
+    visibility: Visibility;
+
     isLoaded: boolean;
 }
 
@@ -52,6 +68,19 @@ const defaultContactInfo: ContactInfo = {
     address: '123 Business Center',
     addressLine2: 'Cairo, Egypt',
     phone: '+20 123 456 7890',
+};
+
+const defaultVisibility: Visibility = {
+    hero: true,
+    brands: true,
+    portfolio: true,
+    services: true,
+    testimonials: true,
+    team: true,
+    faq: true,
+    blog: true,
+    cta: true,
+    contact: true
 };
 
 const defaultTeamMembers: TeamMember[] = [
@@ -67,27 +96,45 @@ const TEAM_STORAGE_KEY = 'cma_team_members';
 const CONTACT_INFO_STORAGE_KEY = 'cma_contact_info';
 const CONTACT_SUBMISSIONS_STORAGE_KEY = 'cma_contact_submissions';
 
-export function SiteDataProvider({ children }: { children: ReactNode }) {
-    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(defaultTeamMembers);
-    const [contactInfo, setContactInfo] = useState<ContactInfo>(defaultContactInfo);
+interface SiteDataProviderProps {
+    children: ReactNode;
+    initialVisibility?: Partial<Visibility>;
+    initialContact?: Partial<ContactInfo>;
+    initialTeam?: TeamMember[];
+}
+
+export function SiteDataProvider({
+    children,
+    initialVisibility,
+    initialContact,
+    initialTeam
+}: SiteDataProviderProps) {
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeam || defaultTeamMembers);
+    const [contactInfo, setContactInfo] = useState<ContactInfo>({ ...defaultContactInfo, ...initialContact });
+    const [visibility, setVisibility] = useState<Visibility>({ ...defaultVisibility, ...initialVisibility });
     const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(!!initialTeam || !!initialContact);
 
     // Load from localStorage on mount
     useEffect(() => {
         try {
-            const storedTeam = localStorage.getItem(TEAM_STORAGE_KEY);
-            const storedContactInfo = localStorage.getItem(CONTACT_INFO_STORAGE_KEY);
-            const storedSubmissions = localStorage.getItem(CONTACT_SUBMISSIONS_STORAGE_KEY);
+            if (!initialTeam) {
+                const storedTeam = localStorage.getItem(TEAM_STORAGE_KEY);
+                if (storedTeam) setTeamMembers(JSON.parse(storedTeam));
+            }
 
-            if (storedTeam) setTeamMembers(JSON.parse(storedTeam));
-            if (storedContactInfo) setContactInfo(JSON.parse(storedContactInfo));
+            if (!initialContact) {
+                const storedContactInfo = localStorage.getItem(CONTACT_INFO_STORAGE_KEY);
+                if (storedContactInfo) setContactInfo(prev => ({ ...prev, ...JSON.parse(storedContactInfo) }));
+            }
+
+            const storedSubmissions = localStorage.getItem(CONTACT_SUBMISSIONS_STORAGE_KEY);
             if (storedSubmissions) setContactSubmissions(JSON.parse(storedSubmissions));
         } catch (error) {
             console.error('Error loading site data:', error);
         }
         setIsLoaded(true);
-    }, []);
+    }, [initialTeam, initialContact]);
 
     // Save team members
     const saveTeamMembers = useCallback((members: TeamMember[]) => {
@@ -170,6 +217,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
                 addContactSubmission,
                 markSubmissionRead,
                 deleteSubmission,
+                visibility,
                 isLoaded,
             }}
         >
