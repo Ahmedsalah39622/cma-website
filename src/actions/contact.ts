@@ -88,6 +88,22 @@ export async function getContactSubmissions() {
     }
 }
 
+
+export async function markSubmissionRead(id: string) {
+    try {
+        const { error } = await supabase
+            .from('contact_submissions')
+            .update({ read: true }) // Assuming 'read' column exists based on client usage
+            .eq('id', id);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Error marking submission as read:', error);
+        throw error;
+    }
+}
+
 export async function deleteSubmission(id: string) {
     try {
         const { error } = await supabase
