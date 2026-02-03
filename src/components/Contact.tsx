@@ -77,7 +77,7 @@ export default function Contact({ contactInfo = { email: '', phone: '', address:
                 </div>
 
                 {/* Main Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 lg:gap-24">
 
                     {/* Contact Info - Left Column */}
                     <div className="space-y-10 scroll-visible animate-fade-in-up">

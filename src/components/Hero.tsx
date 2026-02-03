@@ -54,19 +54,19 @@ const Hero = () => {
         <section className="bg-white pt-48 pb-28 relative overflow-hidden section-wrapper hero-offset">
             <GeometricBackground pattern="mesh" position="right" opacity={0.06} className="text-[#183B73]" />
             <div className="container-custom">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-12 items-start">
 
                     {/* Left Content */}
-                    <div className="flex flex-col gap-8 pt-8">
+                    <div className="flex flex-col gap-8 pt-8 items-center text-center xl:items-start xl:text-left">
                         <h1 className="animate-on-load animate-fade-in-up text-5xl md:text-6xl lg:text-[72px] font-semibold text-[#020B1C] leading-[1.1] tracking-[-0.03em]">
                             Stay Ahead with <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#183B73] to-[#FFB800]">Forward-Thinking</span> Digital Marketing
                         </h1>
 
-                        <p className="animate-on-load animate-fade-in-up delay-200 text-[#183B73]/70 text-base leading-[1.8] max-w-[557px]">
+                        <p className="animate-on-load animate-fade-in-up delay-200 text-[#183B73]/70 text-base leading-[1.8] max-w-[557px] mx-auto xl:mx-0">
                             Grow your brand faster with smart, data-driven strategies designed to keep you ahead of the competition. </p>
 
                         {/* CTA Buttons */}
-                        <div className="animate-on-load animate-fade-in-up delay-300 flex flex-wrap items-center gap-8 md:gap-14">
+                        <div className="animate-on-load animate-fade-in-up delay-300 flex flex-wrap items-center justify-center xl:justify-start gap-8 md:gap-14">
                             <Link
                                 href="#contact"
                                 className="btn bg-[#020B1C] text-white hover:bg-[#183B73] btn-lg inline-flex items-center gap-3 shadow-xl hover:shadow-[#FFB800]/20 transition-all duration-300"

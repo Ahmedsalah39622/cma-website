@@ -54,12 +54,12 @@ export default function Testimonials() {
       <ScrollReveal className="container-custom relative z-10">
         <div className="flex flex-col gap-16 lg:gap-20">
           {/* Quote */}
-          <blockquote className={`scroll-visible animate-fade-in-up testimonial-quote text-2xl md:text-3xl lg:text-4xl font-semibold text-[#010205] leading-[1.6] tracking-[-0.03em] ${isFading ? 'fade-out' : 'fade-in'}`}>
+          <blockquote className={`scroll-visible animate-fade-in-up testimonial-quote text-2xl md:text-3xl lg:text-4xl font-semibold text-[#010205] leading-[1.6] tracking-[-0.03em] text-center xl:text-left ${isFading ? 'fade-out' : 'fade-in'}`}>
             {current.quote}
           </blockquote>
 
           {/* Author & Navigation */}
-          <div className="scroll-visible animate-fade-in-up delay-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+          <div className="scroll-visible animate-fade-in-up delay-200 flex flex-col xl:flex-row justify-between items-center gap-8">
             {/* Author */}
             <div className="flex items-center gap-6">
               <div className="w-[70px] h-[70px] rounded-full bg-gradient-to-br from-[#FFD700] to-[#D4AF37] border-2 border-white/50 overflow-hidden flex items-center justify-center">

@@ -14,7 +14,7 @@ export default function Blog() {
             <GeometricBackground pattern="waves" position="right" opacity={0.05} color="#4169E1" />
             <ScrollReveal className="container-custom relative z-10">
                 {/* Header */}
-                <div className="flex flex-col lg:flex-row justify-between items-start gap-8 lg:gap-[73px] mb-16">
+                <div className="flex flex-col xl:flex-row justify-between items-center xl:items-start gap-8 lg:gap-[73px] mb-16 text-center xl:text-left">
                     <h2 className="scroll-visible animate-fade-in-up text-4xl md:text-5xl font-semibold text-[#010205] leading-[1.3] tracking-[-0.03em] max-w-[684px]">
                         Digital Marketing & SEO Services That Grow Traffic & Increase Revenue
                     </h2>
@@ -22,7 +22,7 @@ export default function Blog() {
                         <p className="text-[#878C91] text-base leading-[1.8]">
                             We are the top digital marketing agency for branding corp. We offer a full range of services to help clients improve their search engine rankings and drive more traffic to their websites.
                         </p>
-                        <button className="self-start px-6 py-4 border border-[#010205] rounded-full font-bold text-base font-[Manrope] hover:bg-[#010205] hover:text-white transition-all">
+                        <button className="self-center xl:self-start px-6 py-4 border border-[#010205] rounded-full font-bold text-base font-[Manrope] hover:bg-[#010205] hover:text-white transition-all">
                             See more
                         </button>
                     </div>

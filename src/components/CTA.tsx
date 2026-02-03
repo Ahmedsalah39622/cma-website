@@ -19,8 +19,8 @@ export default function CTA() {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-[#FFB800] to-transparent rounded-full"></div>
 
                 <ScrollReveal className="container-custom relative z-10">
-                    <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
-                        <h2 className="scroll-visible animate-fade-in-left text-4xl md:text-5xl lg:text-7xl xl:text-[80px] font-semibold text-white leading-[1.3] tracking-[-0.03em]">
+                    <div className="flex flex-col xl:flex-row justify-between items-center gap-8">
+                        <h2 className="scroll-visible animate-fade-in-left text-4xl md:text-5xl lg:text-7xl xl:text-[80px] font-semibold text-white leading-[1.3] tracking-[-0.03em] text-center xl:text-left">
                             Ready to work with us ?
                         </h2>
 

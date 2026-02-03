@@ -55,7 +55,7 @@ export default function Team({ teamMembers = [] }: TeamProps) {
                             >
                                 {/* Card with curved bottom */}
                                 <div
-                                    className="relative w-[200px] lg:w-[240px] h-[280px] lg:h-[340px] rounded-t-[100px] rounded-b-[40px] overflow-hidden transition-transform duration-500 group-hover:scale-[1.02] group-hover:-translate-y-2"
+                                    className="relative w-[200px] lg:w-[240px] h-[280px] lg:h-[340px] rounded-t-[100px] rounded-b-[40px] overflow-hidden transition-all duration-500 ease-out group-hover:scale-[1.02] group-hover:-translate-y-3 group-hover:shadow-2xl"
                                     style={{ backgroundColor: member.bgColor || '#FFE4C4' }}
                                 >
                                     {member.image ? (

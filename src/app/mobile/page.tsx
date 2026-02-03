@@ -397,7 +397,7 @@ export default function MobilePage() {
 
           <div className="flex flex-col gap-10 max-w-sm mx-auto">
             {dynamicPosts.slice(0, 3).map((post, i) => (
-              <div key={i} className="bg-white rounded-[3.5rem] p-4 shadow-xl border border-slate-100 group transition-all duration-500 hover:shadow-2xl text-left">
+              <div key={i} className="bg-white rounded-[3.5rem] p-4 shadow-xl border border-slate-100 group transition-all duration-500 hover:shadow-2xl text-center">
                 <div className="aspect-video w-full rounded-[2.8rem] overflow-hidden mb-8 relative">
                   <img src={post.imageUrl || '/blog-placeholder.jpg'} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                   <div className="absolute top-6 left-6 px-4 py-2 bg-white/95 backdrop-blur rounded-full flex items-center gap-2">
@@ -405,7 +405,7 @@ export default function MobilePage() {
                     <span className="text-[10px] font-black text-slate-950 uppercase">{post.readTime}</span>
                   </div>
                 </div>
-                <div className="px-6 pb-6 text-center lg:text-left flex flex-col items-center lg:items-start text-center">
+                <div className="px-6 pb-6 text-center xl:text-left flex flex-col items-center xl:items-start">
                   <h3 className="text-2xl font-black text-slate-950 mb-4 leading-tight">{post.title}</h3>
                   <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-6 text-center">{post.excerpt}</p>
                   <div className="flex items-center gap-3 text-gold font-black text-[10px] uppercase tracking-widest cursor-pointer group-hover:gap-5 transition-all mx-auto">

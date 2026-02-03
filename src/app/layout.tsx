@@ -10,6 +10,8 @@ import { BrandsProvider } from "@/context/BrandsContext";
 import { FAQProvider } from "@/context/FAQContext";
 import MobileNotice from "@/components/MobileNotice";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import CustomCursor from "@/components/CustomCursor";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -119,28 +121,31 @@ export default async function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} antialiased min-h-screen flex flex-col`}>
-        <MobileNotice />
-        <ServicesProvider initialServices={services as any} initialSettings={settings as any}>
-          <SiteDataProvider
-            initialVisibility={visibility}
-            initialContact={contactData}
-            initialTeam={teamData}
-          >
-            <TestimonialsProvider initialTestimonials={testimonials}>
-              <FAQProvider initialFaqs={faqs}>
-                <BlogProvider initialPosts={posts}>
-                  <PortfolioProvider initialItems={projects}>
-                    <BrandsProvider initialBrands={brands}>
-                      {children}
-                      <WhatsAppButton />
-                    </BrandsProvider>
-                  </PortfolioProvider>
-                </BlogProvider>
-              </FAQProvider>
-            </TestimonialsProvider>
-          </SiteDataProvider>
-        </ServicesProvider>
-        <Analytics />
+        <SmoothScroll>
+          <MobileNotice />
+          <ServicesProvider initialServices={services as any} initialSettings={settings as any}>
+            <SiteDataProvider
+              initialVisibility={visibility}
+              initialContact={contactData}
+              initialTeam={teamData}
+            >
+              <TestimonialsProvider initialTestimonials={testimonials}>
+                <FAQProvider initialFaqs={faqs}>
+                  <BlogProvider initialPosts={posts}>
+                    <PortfolioProvider initialItems={projects}>
+                      <BrandsProvider initialBrands={brands}>
+                        {children}
+                        <WhatsAppButton />
+                      </BrandsProvider>
+                    </PortfolioProvider>
+                  </BlogProvider>
+                </FAQProvider>
+              </TestimonialsProvider>
+            </SiteDataProvider>
+          </ServicesProvider>
+          <CustomCursor />
+          <Analytics />
+        </SmoothScroll>
       </body>
     </html>
   );

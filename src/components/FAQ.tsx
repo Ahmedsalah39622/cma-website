@@ -13,10 +13,10 @@ export default function FAQ() {
         <section className="py-8 lg:py-12 section-wrapper">
             <div className="mx-4 bg-white rounded-[28px] py-20 lg:py-24 px-8 lg:px-20 relative overflow-hidden">
                 <GeometricBackground pattern="marketing" position="right" opacity={0.06} className="text-[#020B1C]" />
-                <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 relative z-10">
+                <div className="flex flex-col xl:flex-row gap-16 lg:gap-24 relative z-10">
 
                     {/* Left Column */}
-                    <div className="lg:w-[531px] flex flex-col gap-12">
+                    <div className="lg:w-[531px] flex flex-col gap-12 items-center text-center xl:items-start xl:text-left mx-auto xl:mx-0">
                         <div className="flex flex-col gap-6">
                             <h2 className="text-4xl md:text-5xl font-semibold text-[#010205] leading-[1.3] tracking-[-0.03em]">
                                 Digital Marketing FAQs

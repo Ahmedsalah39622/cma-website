@@ -35,9 +35,9 @@ export default function Services({ services = [], moreCount = 0, moreOptionsText
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-10">
                     {services.map((service, idx) => (
-                        <div key={service.id} className="scroll-visible animate-fade-in-up group card service-card hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 text-left flex flex-col items-start h-full" style={{ animationDelay: `${0.1 + idx * 0.1}s` }}>
+                        <div key={service.id} className="scroll-visible animate-fade-in-up group card service-card hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 text-center xl:text-left flex flex-col items-center xl:items-start h-full" style={{ animationDelay: `${0.1 + idx * 0.1}s` }}>
                             <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-800 mb-8 group-hover:bg-[#4169E1] group-hover:text-white transition-colors duration-300 shadow-sm">
                                 {ServiceIcons[service.iconType as keyof typeof ServiceIcons] || ServiceIcons['grid']}
                             </div>
