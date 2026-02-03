@@ -143,9 +143,9 @@ export default async function RootLayout({
               </TestimonialsProvider>
             </SiteDataProvider>
           </ServicesProvider>
-          <CustomCursor />
-          <Analytics />
         </SmoothScroll>
+        <CustomCursor />
+        <Analytics />
       </body>
     </html>
   );

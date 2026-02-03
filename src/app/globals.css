@@ -19,6 +19,60 @@
   animation-play-state: paused;
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes tilt {
+
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+
+  50% {
+    transform: rotate(1deg);
+  }
+}
+
+.animate-tilt {
+  animation: tilt 4s infinite linear;
+}
+
+@keyframes width-grow {
+  0% {
+    width: 0;
+  }
+
+  100% {
+    width: 6rem;
+  }
+}
+
+.animate-width-grow {
+  animation: width-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.5s;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .fade-mask-x {
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);

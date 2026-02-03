@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import GeometricBackground from './GeometricBackground';
+import MagneticButton from '@/components/MagneticButton';
 
 // Custom hook for animated counting
 const useCountUp = (end: number, duration: number = 2000) => {
@@ -66,16 +67,34 @@ const Hero = () => {
                             Grow your brand faster with smart, data-driven strategies designed to keep you ahead of the competition. </p>
 
                         {/* CTA Buttons */}
-                        <div className="animate-on-load animate-fade-in-up delay-300 flex flex-wrap items-center justify-center xl:justify-start gap-8 md:gap-14">
-                            <Link
-                                href="#contact"
-                                className="btn bg-[#020B1C] text-white hover:bg-[#183B73] btn-lg inline-flex items-center gap-3 shadow-xl hover:shadow-[#FFB800]/20 transition-all duration-300"
-                            >
-                                Schedule Call
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFB800" strokeWidth="2">
-                                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </Link>
+                        {/* CTA Buttons */}
+                        {/* Added padding and negative margin to prevent glow clipping without affecting layout */}
+                        <div className="animate-on-load animate-fade-in-up delay-300 flex flex-wrap items-center justify-center xl:justify-start gap-8 md:gap-14 p-8 -m-8">
+                            <MagneticButton>
+                                <div className="relative group/btn z-10">
+                                    {/* Rotating Border Beam - increased size */}
+                                    <div className="absolute -inset-1 rounded-full overflow-hidden">
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[conic-gradient(from_0deg,transparent_0_340deg,#FFB800_360deg)] animate-spin-slow opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                                    </div>
+                                    {/* Static Glow Backing - Larger and stronger */}
+                                    <div className="absolute -inset-4 rounded-full bg-[#FFB800] blur-2xl opacity-0 group-hover/btn:opacity-50 transition duration-500 will-change-transform"></div>
+
+                                    <Link
+                                        href="#contact"
+                                        className="relative btn bg-[#020B1C] text-white hover:bg-[#183B73] btn-lg inline-flex items-center gap-3 shadow-xl hover:shadow-[#FFB800]/20 transition-all duration-300 pointer-events-none overflow-hidden"
+                                        style={{ pointerEvents: 'auto' }}
+                                    >
+                                        <span className="relative z-10 flex items-center gap-3">
+                                            Schedule Call
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFB800" strokeWidth="2" className="transition-transform duration-300 group-hover/btn:translate-x-1">
+                                                <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </span>
+                                        {/* Shimmer Effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer" style={{ transform: 'skewX(-20deg)' }}></div>
+                                    </Link>
+                                </div>
+                            </MagneticButton>
 
                             <Link href="#portfolio" className="group flex items-center gap-2 text-[#020B1C] font-semibold hover:text-[#FFB800] transition-colors">
                                 <span className="border-b border-[#020B1C] group-hover:border-[#FFB800] transition-colors">View Case Study</span>
