@@ -37,8 +37,8 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/cma-logo.png",
+    apple: "/cma-logo.png",
   },
 };
 import { Analytics } from "@vercel/analytics/react";
