@@ -1,188 +1,435 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Grid, List, Sparkles } from 'lucide-react';
+import { ArrowLeft, Grid, LayoutList, Sparkles, ArrowUpRight, Search } from 'lucide-react';
 import { usePortfolio } from '@/context/PortfolioContext';
 
-import Footer from '@/components/Footer';
+/* ─── Intersection Observer hook for scroll-reveal ─── */
+function useInView(threshold = 0.1) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
+}
+
+function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const { ref, visible } = useInView();
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(24px)',
+        transition: `opacity 0.6s cubic-bezier(.16,1,.3,1) ${delay}s, transform 0.6s cubic-bezier(.16,1,.3,1) ${delay}s`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function MobilePortfolioPage() {
-    const { items: projects } = usePortfolio();
-    const safeProjects = projects || [];
+  const { items: projects } = usePortfolio();
+  const safeProjects = projects || [];
 
-    const [selectedCategory, setSelectedCategory] = useState<string>('All');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [scrolled, setScrolled] = useState(false);
 
-    // Filter logic
-    const filteredProjects = selectedCategory === 'All'
-        ? safeProjects
-        : safeProjects.filter((p: any) => p.category === selectedCategory);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-    // Categories
-    const categories = ['All', ...Array.from(new Set(safeProjects.map((p: any) => p.category))).filter(Boolean)];
+  // Filter
+  const filteredProjects = selectedCategory === 'All'
+    ? safeProjects
+    : safeProjects.filter((p: any) => p.category === selectedCategory);
 
-    return (
-        <div className="bg-slate-50 min-h-screen font-sans pb-20">
+  // Categories
+  const categories = ['All', ...Array.from(new Set(safeProjects.map((p: any) => p.category))).filter(Boolean)];
 
-            {/* --- Header --- */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100/50 px-6 py-4 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                    <Link
-                        href="/mobile"
-                        className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-900 active:scale-95 transition-all"
-                    >
-                        <ArrowLeft size={20} />
-                    </Link>
+  return (
+    <div style={{ background: '#FAFBFC', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-                    <span className="font-bold text-slate-900 text-sm tracking-wide uppercase opacity-0 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-forwards">
-                        Portfolio
-                    </span>
+      {/* ═══ Header ═══ */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-400"
+        style={{
+          padding: '0',
+          background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          boxShadow: scrolled
+            ? '0 1px 0 rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.06)'
+            : '0 1px 0 rgba(0,0,0,0.04)',
+          borderBottom: '1px solid rgba(0,0,0,0.05)',
+        }}
+      >
+        <div
+          className="flex items-center justify-between"
+          style={{ padding: '12px 20px' }}
+        >
+          <Link
+            href="/mobile"
+            className="flex items-center justify-center active:scale-90 transition-transform"
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              background: '#f1f5f9',
+              color: '#0f172a',
+            }}
+          >
+            <ArrowLeft size={18} />
+          </Link>
 
-                    <div className="flex bg-slate-100 rounded-full p-1">
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-full transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
-                        >
-                            <Grid size={16} />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
-                        >
-                            <List size={16} />
-                        </button>
-                    </div>
-                </div>
-            </header>
+          <span style={{ fontWeight: 800, fontSize: 14, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0f172a' }}>
+            Portfolio
+          </span>
 
-            {/* --- Hero --- */}
-            <div className="pt-32 px-6 mb-8 text-center">
-                <h1 className="text-5xl font-black text-slate-900 leading-[0.9] tracking-tight mb-4">
-                    Selected <br />
-                    <span className="text-black">Portfolio.</span>
-                </h1>
-                <p className="text-slate-500 font-medium text-sm max-w-[250px] mx-auto leading-relaxed">
-                    Crafting digital experiences that leave a lasting impression.
-                </p>
-            </div>
-
-            {/* --- Filter Bar (Sticky) --- */}
-            <div className="z-40 bg-slate-50/95 backdrop-blur-sm py-4 mb-4 border-b border-white/0 transition-all">
-                <div className="overflow-x-auto scrollbar-hide px-6 flex items-center gap-3">
-                    {categories.map((cat: any) => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
-                                ? 'bg-slate-900 text-white shadow-lg scale-105'
-                                : 'bg-white text-slate-500 border border-slate-200 hover:border-gold/50'
-                                }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* --- Content --- */}
-            <div className="px-6 min-h-[50vh]">
-
-                {/* Count */}
-                <div className="flex items-center justify-end mb-6">
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md">
-                        {filteredProjects.length} PROJECTS
-                    </span>
-                </div>
-
-                {/* Grid View */}
-                {viewMode === 'grid' && (
-                    <div className="grid grid-cols-2 gap-4">
-                        {filteredProjects.map((project: any, index: number) => (
-                            <Link
-                                key={project.id || index}
-                                href={`/project/${project.id || index}?force=desktop`}
-                                className="group relative block"
-                            >
-                                <div className="aspect-[3/4] bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 relative transition-transform duration-500 active:scale-[0.98]">
-                                    <img
-                                        src={project.image}
-                                        alt={project.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-
-                                    {/* Gradient Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-
-                                    {/* Content Overlay */}
-                                    <div className="absolute bottom-0 left-0 p-4 w-full">
-                                        <div className="mb-1 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                            <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-md rounded-md text-[8px] font-bold text-white uppercase tracking-wider mb-2 border border-white/10">
-                                                {project.category}
-                                            </span>
-                                            <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">
-                                                {project.title}
-                                            </h3>
-                                        </div>
-                                    </div>
-
-                                    {/* Year Badge */}
-                                    {project.year && (
-                                        <div className="absolute top-3 right-3">
-                                            <span className="flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full w-8 h-8 text-[9px] font-bold text-white border border-white/10">
-                                                {project.year.slice(-2)}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                )}
-
-                {/* List View */}
-                {viewMode === 'list' && (
-                    <div className="space-y-6">
-                        {filteredProjects.map((project: any, index: number) => (
-                            <Link
-                                key={project.id || index}
-                                href={`/project/${project.id || index}?force=desktop`}
-                                className="block group bg-white rounded-3xl p-3 shadow-sm border border-slate-100 active:scale-[0.98] transition-all"
-                            >
-                                <div className="aspect-video rounded-2xl overflow-hidden mb-4 relative">
-                                    <img
-                                        src={project.image}
-                                        alt={project.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    />
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-slate-900 shadow-sm">
-                                        {project.category}
-                                    </div>
-                                </div>
-                                <div className="px-2 pb-2 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-slate-900 mb-1">{project.title}</h3>
-                                        <p className="text-slate-400 text-xs line-clamp-1">{project.description || 'No description available'}</p>
-                                    </div>
-                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-gold group-hover:text-white transition-colors duration-300">
-                                        <ArrowLeft size={18} className="rotate-180" />
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                )}
-
-                {/* Empty State */}
-                {filteredProjects.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20 opacity-50">
-                        <Sparkles size={48} className="text-slate-300 mb-4" />
-                        <p className="font-bold text-slate-900">No Projects Found</p>
-                        <p className="text-xs text-slate-400">Try changing the category</p>
-                    </div>
-                )}
-            </div>
-            <Footer />
+          <div className="flex" style={{ background: '#f1f5f9', borderRadius: 10, padding: 3 }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              className="flex items-center justify-center transition-all"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: viewMode === 'grid' ? '#fff' : 'transparent',
+                color: viewMode === 'grid' ? '#0f172a' : '#94a3b8',
+                boxShadow: viewMode === 'grid' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              }}
+            >
+              <Grid size={15} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className="flex items-center justify-center transition-all"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: viewMode === 'list' ? '#fff' : 'transparent',
+                color: viewMode === 'list' ? '#0f172a' : '#94a3b8',
+                boxShadow: viewMode === 'list' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              }}
+            >
+              <LayoutList size={15} />
+            </button>
+          </div>
         </div>
-    );
+      </header>
+
+      {/* ═══ Hero ═══ */}
+      <div style={{ paddingTop: 100, paddingBottom: 8, paddingLeft: 24, paddingRight: 24, textAlign: 'center' }}>
+        <Reveal>
+          <div
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)', marginBottom: 14 }}
+          >
+            <Sparkles size={12} style={{ color: '#D4AF37' }} />
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#94a3b8' }}>Our Work</span>
+          </div>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <h1 style={{ fontSize: 36, fontWeight: 900, lineHeight: 0.95, letterSpacing: '-0.04em', color: '#0f172a', marginBottom: 10 }}>
+            Selected <br />
+            <span style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>Portfolio.</span>
+          </h1>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <p style={{ color: '#94a3b8', fontSize: 14, fontWeight: 500, maxWidth: 260, margin: '0 auto', lineHeight: 1.6 }}>
+            Crafting digital experiences that leave a lasting impression.
+          </p>
+        </Reveal>
+      </div>
+
+      {/* ═══ Filter Bar ═══ */}
+      <Reveal delay={0.15}>
+        <div style={{ padding: '16px 0 12px', marginBottom: 4 }}>
+          <div
+            className="flex items-center gap-2 overflow-x-auto"
+            style={{
+              paddingLeft: 20,
+              paddingRight: 20,
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
+            {categories.map((cat: any) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className="flex-shrink-0 transition-all duration-300 active:scale-95"
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: 100,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  background: selectedCategory === cat ? '#0f172a' : '#fff',
+                  color: selectedCategory === cat ? '#fff' : '#64748b',
+                  border: selectedCategory === cat ? '1px solid #0f172a' : '1px solid #e2e8f0',
+                  boxShadow: selectedCategory === cat ? '0 4px 16px rgba(15,23,42,0.2)' : '0 1px 3px rgba(0,0,0,0.04)',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ═══ Project Count ═══ */}
+      <div style={{ padding: '0 24px', marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+        <span style={{
+          fontSize: 10,
+          fontWeight: 800,
+          color: '#94a3b8',
+          background: '#f1f5f9',
+          padding: '4px 10px',
+          borderRadius: 8,
+          letterSpacing: '0.1em',
+        }}>
+          {filteredProjects.length} PROJECTS
+        </span>
+      </div>
+
+      {/* ═══ Content ═══ */}
+      <div style={{ padding: '0 16px', minHeight: '50vh' }}>
+
+        {/* Grid View */}
+        {viewMode === 'grid' && (
+          <div className="grid grid-cols-2 gap-3">
+            {filteredProjects.map((project: any, index: number) => (
+              <Reveal key={project.id || index} delay={index * 0.04}>
+                <Link
+                  href={`/mobile/portfolio/${project.id || index}`}
+                  className="group block"
+                >
+                  <div
+                    className="overflow-hidden relative active:scale-[0.97] transition-transform duration-300"
+                    style={{
+                      aspectRatio: '3/4',
+                      borderRadius: 20,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                      border: '1px solid #f1f5f9',
+                    }}
+                  >
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+
+                    {/* Gradient overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 100%)',
+                    }} />
+
+                    {/* Year badge */}
+                    {project.year && (
+                      <div
+                        className="absolute"
+                        style={{
+                          top: 10,
+                          right: 10,
+                          background: 'rgba(255,255,255,0.15)',
+                          backdropFilter: 'blur(12px)',
+                          borderRadius: 10,
+                          padding: '4px 10px',
+                          fontSize: 10,
+                          fontWeight: 800,
+                          color: '#fff',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                        }}
+                      >
+                        {project.year}
+                      </div>
+                    )}
+
+                    {/* Bottom info */}
+                    <div className="absolute w-full" style={{ bottom: 0, left: 0, padding: 14 }}>
+                      <span style={{
+                        display: 'inline-block',
+                        background: 'rgba(255,255,255,0.15)',
+                        backdropFilter: 'blur(8px)',
+                        padding: '3px 10px',
+                        borderRadius: 100,
+                        fontSize: 8,
+                        fontWeight: 800,
+                        color: '#fff',
+                        letterSpacing: '0.15em',
+                        textTransform: 'uppercase',
+                        marginBottom: 6,
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}>
+                        {project.category}
+                      </span>
+                      <h3 style={{
+                        color: '#fff',
+                        fontWeight: 800,
+                        fontSize: 14,
+                        lineHeight: 1.25,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}>
+                        {project.title}
+                      </h3>
+                    </div>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        )}
+
+        {/* List View */}
+        {viewMode === 'list' && (
+          <div className="flex flex-col gap-3">
+            {filteredProjects.map((project: any, index: number) => (
+              <Reveal key={project.id || index} delay={index * 0.04}>
+                <Link
+                  href={`/mobile/portfolio/${project.id || index}`}
+                  className="group block active:scale-[0.98] transition-all"
+                  style={{
+                    background: '#fff',
+                    borderRadius: 20,
+                    overflow: 'hidden',
+                    border: '1px solid #f1f5f9',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  {/* Thumbnail */}
+                  <div className="overflow-hidden relative" style={{ aspectRatio: '16/9' }}>
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div
+                      className="absolute"
+                      style={{
+                        top: 10,
+                        left: 10,
+                        background: 'rgba(255,255,255,0.92)',
+                        backdropFilter: 'blur(8px)',
+                        padding: '5px 12px',
+                        borderRadius: 100,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        color: '#0f172a',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      {project.category}
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex items-center justify-between" style={{ padding: '14px 16px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', marginBottom: 3, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
+                        {project.title}
+                      </h3>
+                      <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {project.description || project.year || 'View project details'}
+                      </p>
+                    </div>
+                    <div
+                      className="flex items-center justify-center flex-shrink-0 transition-all"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 12,
+                        background: '#f8fafc',
+                        color: '#64748b',
+                        marginLeft: 12,
+                      }}
+                    >
+                      <ArrowUpRight size={16} />
+                    </div>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {filteredProjects.length === 0 && (
+          <div className="flex flex-col items-center justify-center" style={{ paddingTop: 80, paddingBottom: 80 }}>
+            <div
+              className="flex items-center justify-center"
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 20,
+                background: '#f8fafc',
+                marginBottom: 16,
+                color: '#cbd5e1',
+              }}
+            >
+              <Search size={28} />
+            </div>
+            <p style={{ fontWeight: 800, color: '#0f172a', fontSize: 16, marginBottom: 4 }}>No Projects Found</p>
+            <p style={{ fontSize: 13, color: '#94a3b8' }}>Try changing the category filter</p>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ Footer ═══ */}
+      <footer
+        style={{
+          background: 'linear-gradient(180deg, #0c1222 0%, #0a0f1a 100%)',
+          color: '#fff',
+          padding: '40px 24px 28px',
+          marginTop: 48,
+          textAlign: 'center',
+        }}
+      >
+        <div className="flex items-center justify-center gap-2.5" style={{ marginBottom: 14 }}>
+          <div
+            className="flex items-center justify-center"
+            style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: 6 }}
+          >
+            <img src="/logo.png" alt="CMA" className="w-full h-full object-contain" />
+          </div>
+          <span style={{ fontWeight: 800, fontSize: 18 }}>CMA</span>
+        </div>
+        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, lineHeight: 1.6, maxWidth: 260, margin: '0 auto 20px' }}>
+          Your trusted partner in creative digital marketing solutions.
+        </p>
+        <div style={{ width: '100%', maxWidth: 180, height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 auto 16px' }} />
+        <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>
+          © {new Date().getFullYear()} CMA Agency. All rights reserved.
+        </p>
+      </footer>
+    </div>
+  );
 }
