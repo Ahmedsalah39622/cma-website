@@ -40,3 +40,21 @@ CREATE POLICY "Public Blog Posts are viewable by everyone" ON blog_posts
 -- Create policy to allow authenticated users to manage Blog Posts
 CREATE POLICY "Authenticated users can manage Blog Posts" ON blog_posts
     FOR ALL USING (auth.role() = 'authenticated');
+
+
+-- Create Users table for admin authentication
+CREATE TABLE IF NOT EXISTS users (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    username text NOT NULL UNIQUE,
+    password_hash text NOT NULL,
+    role text NOT NULL DEFAULT 'admin',
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS for Users
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Only authenticated admins should be able to manage users
+CREATE POLICY "Authenticated users can manage Users" ON users
+    FOR ALL USING (auth.role() = 'authenticated');

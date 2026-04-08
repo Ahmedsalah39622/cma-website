@@ -1,5 +1,14 @@
 import { pgTable, text, timestamp, boolean, jsonb, uuid } from 'drizzle-orm/pg-core';
 
+export const users = pgTable('users', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    username: text('username').notNull().unique(),
+    passwordHash: text('password_hash').notNull(),
+    role: text('role').notNull().default('admin'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 export const projects = pgTable('projects', {
     id: uuid('id').defaultRandom().primaryKey(),
     title: text('title').notNull(),

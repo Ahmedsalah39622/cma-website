@@ -1,10 +1,13 @@
 import { timingSafeEqual } from "node:crypto";
 
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import authConfig from "@/auth.config";
+import { db } from "@/db";
+import { users } from "@/db/schema";
 
 type AttemptState = {
   count: number;
@@ -16,8 +19,6 @@ const MAX_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000;
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const attemptStore = new Map<string, AttemptState>();
-
-const FALLBACK_HASH = "$2b$12$yq1n2fuMofI0YUvMqi4YHOdQjRjMZ7fZ2mkVf7M8k3by2u2s6UHfS";
 
 function getAttemptKey(username: string): string {
   return username.trim().toLowerCase();
@@ -77,6 +78,11 @@ function safeStringEqual(a: string, b: string): boolean {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
+  secret:
+    process.env.AUTH_SECRET ??
+    process.env.NEXTAUTH_SECRET ??
+    (process.env.NODE_ENV === "development" ? "cma-admin-dev-secret-change-me" : undefined),
+  trustHost: true,
   session: {
     strategy: "jwt",
     maxAge: 60 * 15,
@@ -101,16 +107,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const expectedUsername = process.env.ADMIN_USERNAME;
-        const expectedPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+        const [matchedUser] = await db
+          .select({
+            id: users.id,
+            username: users.username,
+            passwordHash: users.passwordHash,
+            role: users.role,
+          })
+          .from(users)
+          .where(eq(users.username, username))
+          .limit(1);
 
-        if (!expectedUsername || !expectedPasswordHash) {
+        if (!matchedUser) {
+          registerFailure(key, now);
           return null;
         }
 
-        const isUsernameValid = safeStringEqual(username, expectedUsername);
-        const hashToCompare = expectedPasswordHash || FALLBACK_HASH;
-        const isPasswordValid = await bcrypt.compare(password, hashToCompare);
+        const isUsernameValid = safeStringEqual(username, matchedUser.username);
+        const isPasswordValid = await bcrypt.compare(password, matchedUser.passwordHash);
 
         if (!isUsernameValid || !isPasswordValid) {
           registerFailure(key, now);
@@ -120,8 +134,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         registerSuccess(key);
 
         return {
-          id: "admin-user",
-          name: "Admin",
+          id: matchedUser.id,
+          name: matchedUser.username,
+          role: matchedUser.role,
         };
       },
     }),
