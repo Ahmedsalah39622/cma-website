@@ -1726,7 +1726,7 @@ textarea {
    ============================================ */
 
 .mobile-layout {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: 'Outfit', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

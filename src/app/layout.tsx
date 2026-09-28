@@ -1,6 +1,5 @@
 export const dynamic = 'force-dynamic';
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { PortfolioProvider } from "@/context/PortfolioContext";
 import { SiteDataProvider } from "@/context/SiteDataContext";
@@ -12,11 +11,6 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import CustomCursor from "@/components/CustomCursor";
 import SmoothScroll from "@/components/SmoothScroll";
 import Providers from "@/components/Providers";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cma-website.vercel.app'),
@@ -121,7 +115,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.variable} antialiased min-h-screen flex flex-col`}>
+      <body className="antialiased min-h-screen flex flex-col">
         <Providers>
           <SmoothScroll>
             <ServicesProvider initialServices={services as any} initialSettings={settings as any}>
