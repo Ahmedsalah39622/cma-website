@@ -20,15 +20,15 @@ export default function WhatsAppButton() {
             className="fixed bottom-6 right-6 z-50 group"
         >
             <div className="relative">
-                {/* Pulse Animation Ring */}
-                <div className="absolute inset-0 bg-[#25D366] rounded-full animate-ping opacity-25" />
+                {/* Pulse Animation Ring - matching M3 Shape */}
+                <div className="absolute inset-0 bg-[#25D366] rounded-[24px] animate-ping opacity-20" />
 
-                {/* Button */}
-                <div className="relative w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/30 hover:scale-110 hover:shadow-xl hover:shadow-[#25D366]/40 transition-all duration-300">
+                {/* M3 Large FAB Button */}
+                <div className="relative w-16 h-16 bg-[#25D366] rounded-[24px] flex items-center justify-center shadow-[var(--md-elevation-3)] hover:shadow-[var(--md-elevation-4)] hover:scale-105 transition-all duration-300 ease-out">
                     {/* WhatsApp Icon */}
                     <svg
-                        width="28"
-                        height="28"
+                        width="30"
+                        height="30"
                         viewBox="0 0 24 24"
                         fill="white"
                     >
@@ -36,10 +36,10 @@ export default function WhatsAppButton() {
                     </svg>
                 </div>
 
-                {/* Tooltip */}
-                <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white rounded-lg shadow-lg text-sm font-medium text-gray-800 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                {/* Tooltip - M3 Styling */}
+                <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-[var(--md-sys-color-surface-variant)] text-[var(--md-sys-color-on-surface-variant)] border border-[var(--md-sys-color-outline-variant)] rounded-xl shadow-[var(--md-elevation-1)] text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     Chat with us
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2 h-2 bg-white rotate-45" />
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2 h-2 bg-[var(--md-sys-color-surface-variant)] border-r border-t border-[var(--md-sys-color-outline-variant)] rotate-45" />
                 </div>
             </div>
         </a>

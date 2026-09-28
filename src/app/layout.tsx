@@ -8,7 +8,6 @@ import { TestimonialsProvider } from "@/context/TestimonialsContext";
 import { ServicesProvider } from "@/context/ServicesContext";
 import { BrandsProvider } from "@/context/BrandsContext";
 import { FAQProvider } from "@/context/FAQContext";
-import MobileNotice from "@/components/MobileNotice";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CustomCursor from "@/components/CustomCursor";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -21,12 +20,12 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cma-website.vercel.app'),
-  title: "CMA - Creative Marketing Agency | Transform Your Digital Presence",
-  description: "CMA is a leading digital marketing agency specializing in branding, social media, SEO, and video production. We help businesses grow through innovative marketing strategies.",
-  keywords: "marketing agency, digital marketing, branding, social media marketing, SEO, video production, creative agency",
+  title: "CMA Studio | Creative Strategy, Content & Digital Growth",
+  description: "CMA brings strategy, creativity, and digital expertise together to build brands people remember and businesses that move forward.",
+  keywords: "CMA Studio, creative agency, brand strategy, digital marketing, content production, creative growth",
   openGraph: {
-    title: "CMA - Creative Marketing Agency",
-    description: "Transform your brand with data-driven strategies and creative excellence",
+    title: "CMA Studio | Make your brand impossible to ignore",
+    description: "Strategy, creativity, and the right people to move ambitious brands forward.",
     type: "website",
     images: [
       {
@@ -54,6 +53,7 @@ import { getTeamMembers } from '@/actions/team';
 import { getContactInfo } from '@/actions/contact';
 import { getSectionVisibility } from '@/actions/settings';
 import { BlogProvider } from "@/context/BlogContext";
+import { UIProvider } from "@/context/UIContext";
 
 export default async function RootLayout({
   children,
@@ -124,7 +124,6 @@ export default async function RootLayout({
       <body className={`${inter.variable} antialiased min-h-screen flex flex-col`}>
         <Providers>
           <SmoothScroll>
-            <MobileNotice />
             <ServicesProvider initialServices={services as any} initialSettings={settings as any}>
               <SiteDataProvider
                 initialVisibility={visibility}
@@ -136,8 +135,10 @@ export default async function RootLayout({
                     <BlogProvider initialPosts={posts}>
                       <PortfolioProvider initialItems={projects}>
                         <BrandsProvider initialBrands={brands}>
-                          {children}
-                          <WhatsAppButton />
+                          <UIProvider>
+                            {children}
+                            <WhatsAppButton />
+                          </UIProvider>
                         </BrandsProvider>
                       </PortfolioProvider>
                     </BlogProvider>

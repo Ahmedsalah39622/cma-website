@@ -27,15 +27,15 @@ export default function Team({ teamMembers = [] }: TeamProps) {
     }));
 
     return (
-        <section id="team" className="py-24 lg:py-32 bg-white section-wrapper overflow-hidden">
+        <section id="team" className="py-24 lg:py-32 bg-transparent section-wrapper overflow-hidden">
             <ScrollReveal className="container-custom">
                 {/* Header */}
                 <div className="scroll-visible animate-fade-in-up text-center mb-20 lg:mb-28">
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#010205] tracking-tight">
-                        Meet Our Team
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--md-sys-color-on-background)] tracking-tight">
+                        Meet Our <span className="bg-gradient-to-r from-[var(--md-sys-color-primary)] to-[var(--md-sys-color-secondary)] bg-clip-text text-transparent font-bold">Creative Mindset</span>
                     </h2>
-                    <p className="text-[#666] text-lg mt-6 max-w-2xl mx-auto">
-                        The talented people behind our success
+                    <p className="text-[var(--md-sys-color-on-surface-variant)] text-lg mt-6 max-w-2xl mx-auto">
+                        The talented people behind our success and continuous upgrade
                     </p>
                 </div>
 
@@ -53,16 +53,16 @@ export default function Team({ teamMembers = [] }: TeamProps) {
                                 className="group flex flex-col items-center"
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
-                                {/* Card with curved bottom */}
+                                {/* Card with curved bottom - M3 styled */}
                                 <div
-                                    className="relative w-[200px] lg:w-[240px] h-[280px] lg:h-[340px] rounded-t-[100px] rounded-b-[40px] overflow-hidden transition-all duration-500 ease-out group-hover:scale-[1.02] group-hover:-translate-y-3 group-hover:shadow-2xl"
-                                    style={{ backgroundColor: member.bgColor || '#FFE4C4' }}
+                                    className="relative w-[200px] lg:w-[240px] h-[280px] lg:h-[340px] rounded-t-full rounded-b-[28px] overflow-hidden transition-all duration-500 ease-out group-hover:scale-[1.05] group-hover:-translate-y-2 shadow-[0_8px_24px_rgba(0,0,0,0.3)] group-hover:shadow-[0_16px_36px_rgba(0,0,0,0.5)] border border-white/5"
+                                    style={{ backgroundColor: member.bgColor || '#1E1F22' }}
                                 >
                                     {member.image ? (
                                         <img
                                             src={member.image}
                                             alt={member.name}
-                                            className="w-full h-full object-cover object-top"
+                                            className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
@@ -74,15 +74,15 @@ export default function Team({ teamMembers = [] }: TeamProps) {
                                     )}
 
                                     {/* Subtle gradient overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 </div>
 
                                 {/* Name & Role */}
                                 <div className="mt-6 text-center">
-                                    <h3 className="text-[#010205] font-semibold text-lg lg:text-xl">
+                                    <h3 className="text-[var(--md-sys-color-on-background)] font-semibold text-lg lg:text-xl group-hover:text-[var(--md-sys-color-primary)] transition-colors">
                                         {member.name}
                                     </h3>
-                                    <p className="text-[#888] text-sm lg:text-base mt-1">
+                                    <p className="text-[var(--md-sys-color-on-surface-variant)] text-sm lg:text-base mt-1">
                                         {member.role}
                                     </p>
                                 </div>

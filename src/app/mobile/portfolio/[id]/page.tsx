@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, ExternalLink, Star, Globe, Play, ChevronRight, Share2, Heart } from 'lucide-react';
 import { usePortfolio } from '@/context/PortfolioContext';
+import ASAluminiumCase from '@/components/ASAluminiumCase';
+
 
 /* ─── Intersection Observer hook for scroll-reveal ─── */
 function useInView(threshold = 0.1) {
@@ -84,6 +86,19 @@ export default function ProjectDetailPage() {
       </div>
     );
   }
+
+  const isASAluminium = project.id === '45cc0e66-8ff8-4cb2-b084-0a267fb09e2c' || 
+                        project.company?.toLowerCase().includes('aluminium') || 
+                        project.title?.toLowerCase().includes('aluminium');
+
+  if (isASAluminium) {
+    return (
+      <main className="min-h-screen bg-[#07080B] text-[#F5F5F7] selection:bg-[var(--md-sys-color-primary)] selection:text-white">
+        <ASAluminiumCase project={project} isMobileView={true} />
+      </main>
+    );
+  }
+
 
   // Combine main image with gallery images
   const allImages = [

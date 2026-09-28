@@ -6,9 +6,14 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getProject } from '@/actions/portfolio'; // Server Action
 import { PortfolioItem, usePortfolio } from '@/context/PortfolioContext'; // Type definition & Hook
-import GeometricBackground from '@/components/GeometricBackground';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import ASAluminiumCase from '@/components/ASAluminiumCase';
+import CmaNavigation from '@/components/CmaNavigation';
+import { ArrowUpRight } from 'lucide-react';
+import '../../cma-homepage.css';
+import '../cma-project.css';
+
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
@@ -134,6 +139,40 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         );
     }
 
+    // Custom check for AS For Aluminium upgrade showcase page
+    const isASAluminium = project.id === '45cc0e66-8ff8-4cb2-b084-0a267fb09e2c' || 
+                          project.company?.toLowerCase().includes('aluminium') || 
+                          project.title?.toLowerCase().includes('aluminium');
+
+    if (isASAluminium) {
+        return (
+            <main className="min-h-screen bg-[#07080B] text-[#F5F5F7] selection:bg-[var(--md-sys-color-primary)] selection:text-white">
+                {/* Global Header */}
+                {!isFromMobile && <Header />}
+
+                {/* Mobile Back Button (if loaded within a mobile context but using this route) */}
+                {isFromMobile && (
+                    <div className="fixed top-0 left-0 right-0 z-[100] bg-[#07080B]/90 backdrop-blur-md border-b border-white/5 px-4 py-3 flex items-center justify-between shadow-sm">
+                        <Link
+                            href="/mobile/portfolio"
+                            className="flex items-center gap-2 text-white font-bold text-sm bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all"
+                        >
+                            <span>←</span> Back
+                        </Link>
+                        <span className="font-bold text-sm truncate max-w-[150px] text-white">{project?.title}</span>
+                    </div>
+                )}
+
+                <div style={{ paddingTop: isFromMobile ? '64px' : '0px' }}>
+                    <ASAluminiumCase project={project} isMobileView={isFromMobile} />
+                </div>
+
+                {!isFromMobile && <Footer />}
+            </main>
+        );
+    }
+
+
     // Combine main video and additional videos
     const allVideos = [];
     if (project.videoUrl) {
@@ -198,143 +237,117 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     };
 
     return (
-        <main className="min-h-screen bg-[#FFFFFF] text-[#0a0a14] selection:bg-[#FFD700] selection:text-black">
+        <main className="cma-site cma-case-study">
             {/* Global Header */}
-            {!isFromMobile && <Header />}
+            {!isFromMobile && <CmaNavigation homeLinks />}
 
             {/* Mobile Back Button */}
             {isFromMobile && (
-                <div className="fixed top-0 left-0 right-0 z-[100] bg-white/90 backdrop-blur-md border-b border-black/5 px-4 py-3 flex items-center justify-between shadow-sm">
+                <div className="cma-case-mobile-bar">
                     <Link
-                        href="/mobile/portfolio"
-                        className="flex items-center gap-2 text-slate-900 font-bold text-sm bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full transition-all"
+                        href="/work"
+                        className="cma-case-back"
                     >
-                        <span>←</span> Back
+                        <span aria-hidden="true">←</span> Back to work
                     </Link>
-                    <span className="font-bold text-sm truncate max-w-[150px] text-slate-900">{project?.title}</span>
+                    <span>{project?.title}</span>
                 </div>
             )}
 
             {/* Hero Section */}
-            <section className="relative pb-24 overflow-hidden" style={{ paddingTop: '150px' }}>
-                <GeometricBackground pattern="hexagon" position="right" opacity={0.03} color="#000" />
-                <div className="container-custom relative z-10">
-                    <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+            <section className="cma-case-hero">
+                    <div className="cma-case-hero-inner">
                         {/* Text Content */}
-                        <div className="flex-1 space-y-8 order-2 lg:order-1">
+                        <div className="cma-case-copy">
                             {/* Breadcrumb-style meta */}
-                            <div className="flex items-center gap-3 text-black/60 font-medium tracking-wider text-sm uppercase">
-                                <Link href="/#portfolio" className="hover:text-[#FFD700] transition-colors">Portfolio</Link>
+                            <div className="cma-case-breadcrumb">
+                                <Link href="/#work">Work</Link>
                                 <span>/</span>
-                                <span className="text-[#dcbb0a] font-bold">{project.category}</span>
+                                <span>{project.category}</span>
                             </div>
 
-                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] text-[#0a0a14]">
+                            <h1>
                                 {project.title}
                             </h1>
 
-                            <div className="flex flex-wrap gap-6 text-sm font-bold uppercase tracking-widest text-black/50">
+                            <div className="cma-case-facts">
                                 <span>{project.company}</span>
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD700] self-center" />
+                                <span />
                                 <span>{project.year}</span>
                             </div>
 
                             {project.description && (
-                                <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl border-l-4 border-[#FFD700]/50 pl-6">
+                                <p className="cma-case-description">
                                     {project.description}
                                 </p>
                             )}
-
-                            {/* Actions */}
-
                         </div>
 
                         {/* Hero Image */}
                         {project.image && (
-                            <div className="flex-1 w-full order-1 lg:order-2">
-                                <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-2xl shadow-black/10 border border-black/5 group">
+                            <div className="cma-case-image">
                                     <img
                                         src={project.image}
                                         alt={project.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent pointer-events-none" />
-                                </div>
                             </div>
                         )}
                     </div>
-                </div>
             </section>
 
             {/* Combined Gallery Section */}
             {(allImages.length > 0 || allVideos.length > 0) && (
-                <section className="py-32 lg:pb-40 bg-gray-50 border-y border-black/5">
-                    <div className="container-custom">
-                        <h2 className="text-3xl font-bold mb-16 flex items-center gap-4 text-[#0a0a14]">
-                            <span className="w-10 h-[3px] bg-[#FFD700]" />
-                            Project Gallery
-                        </h2>
+                <section className="cma-case-gallery-section">
+                    <div className="cma-case-gallery-inner">
+                        <div className="cma-case-gallery-heading"><div><p className="cma-kicker">MORE FROM THIS PROJECT</p><h2>Project gallery</h2></div><span>{allImages.length + allVideos.length} ITEMS</span></div>
 
-                        <div className="columns-1 md:columns-2 lg:columns-3 gap-8">
+                        <div className="cma-case-gallery-grid">
                             {/* Videos First */}
                             {allVideos.map((video, idx) => (
-                                <div
+                                <button
+                                    type="button"
+                                    aria-label={`Play ${video.type} video`}
                                     key={`vid-${idx}`}
-                                    className="break-inside-avoid relative rounded-2xl overflow-hidden bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/5 group cursor-pointer p-4"
-                                    style={{ marginBottom: '40px', display: 'inline-block', width: '100%' }}
+                                    className="cma-gallery-item cma-gallery-video"
                                     onClick={() => setActiveMedia({ type: 'video', url: video.url, videoType: video.type })}
                                 >
-                                    <div className="relative aspect-video pointer-events-none">
+                                    <div className="cma-gallery-media">
                                         {video.type === 'mp4' ? (
                                             <video
                                                 src={video.url}
-                                                className="w-full h-full object-cover"
                                             />
                                         ) : (
                                             <iframe
                                                 src={getPreviewUrl(video.url, video.type)}
-                                                className="w-full h-full"
                                                 tabIndex={-1}
                                             />
                                         )}
                                         {/* Play Overlay */}
-                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                                            <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur text-black flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                                        <div className="cma-gallery-play">
                                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                                                     <path d="M8 5v14l11-7z" />
                                                 </svg>
-                                            </div>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-white">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-[#FFD700]" />
-                                            <span className="uppercase tracking-wider font-bold text-xs text-black/50">{video.type} Video</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                    <div className="cma-gallery-caption">{video.type} video</div>
+                                </button>
                             ))}
 
                             {/* Images */}
                             {allImages.map((img, idx) => (
-                                <div
+                                <button
+                                    type="button"
+                                    aria-label={`View image ${idx + 1} for ${project.title}`}
                                     key={`img-${idx}`}
-                                    className="break-inside-avoid relative rounded-2xl overflow-hidden bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 cursor-pointer group p-4"
-                                    style={{ marginBottom: '40px', display: 'inline-block', width: '100%' }}
+                                    className="cma-gallery-item"
                                     onClick={() => setActiveMedia({ type: 'image', url: img })}
                                 >
                                     <img
                                         src={img}
                                         alt={`${project.title} ${idx}`}
-                                        className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur text-black p-2 rounded-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                                        </svg>
-                                    </div>
-                                </div>
+                                    <div className="cma-gallery-caption">View image {idx + 1}</div>
+                                </button>
                             ))}
                         </div>
                     </div>
@@ -344,11 +357,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             {/* Media Lightbox */}
             {activeMedia && (
                 <div
-                    className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-xl flex items-center justify-center p-4"
+                    className="cma-lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Project media preview"
                     onClick={() => setActiveMedia(null)}
                 >
                     <button
-                        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-black/5 text-black hover:bg-black/10 flex items-center justify-center transition-colors hover:scale-110 z-[110]"
+                        className="cma-lightbox-close"
+                        type="button"
+                        aria-label="Close media preview"
                         onClick={() => setActiveMedia(null)}
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -357,28 +375,25 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     </button>
 
                     <div
-                        className="w-full max-w-6xl max-h-[90vh] flex items-center justify-center p-2"
+                        className="cma-lightbox-content"
                         onClick={e => e.stopPropagation()}
                     >
                         {activeMedia.type === 'image' ? (
                             <img
                                 src={activeMedia.url}
                                 alt="Full view"
-                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
                             />
                         ) : (
-                            <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
+                            <div className="cma-lightbox-video">
                                 {activeMedia.videoType === 'mp4' ? (
                                     <video
                                         src={activeMedia.url}
                                         controls
                                         autoPlay
-                                        className="w-full h-full object-contain"
                                     />
                                 ) : (
                                     <iframe
                                         src={getEmbedUrl(activeMedia.url, activeMedia.videoType || 'youtube')}
-                                        className="w-full h-full"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                     />
@@ -389,7 +404,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 </div>
             )}
 
-            <Footer />
+            <footer className="cma-footer"><Link className="cma-wordmark" href="/" aria-label="CMA home"><span className="cma-mark" aria-hidden="true">C</span><span>CMA<span className="cma-wordmark-period">.</span></span></Link><p>Good ideas. Good people. Good work.</p><Link href="/#contact">Discuss a project <ArrowUpRight size={15} /></Link><span>© {new Date().getFullYear()} CMA Studio</span></footer>
         </main>
     );
 }

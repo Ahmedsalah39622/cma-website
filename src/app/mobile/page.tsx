@@ -118,7 +118,7 @@ function PortfolioCarousel({ projects }: { projects: any[] }) {
       ref={sectionRef}
       style={{
         padding: '56px 0 48px',
-        background: '#f8fafc',
+        background: 'transparent',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(28px)',
         transition: 'opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1)',
@@ -128,20 +128,20 @@ function PortfolioCarousel({ projects }: { projects: any[] }) {
       <div className="flex flex-col items-center text-center" style={{ marginBottom: 24, padding: '0 24px' }}>
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-          style={{ background: '#fff', border: '1px solid #f1f5f9', marginBottom: 12 }}
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 12 }}
         >
-          <Sparkles size={12} style={{ color: '#D4AF37' }} />
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#94a3b8' }}>Our Gallery</span>
+          <Sparkles size={12} style={{ color: '#FF9F0A' }} />
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8E8E93' }}>Our Gallery</span>
         </div>
-        <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', color: '#0f172a', marginBottom: 10 }}>
+        <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', color: '#FFFFFF', marginBottom: 10 }}>
           Our{' '}
           <span style={{
-            background: 'linear-gradient(135deg, #0f172a 0%, #64748b 100%)',
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #8E8E93 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>Portfolio</span>
         </h2>
-        <p style={{ color: '#94a3b8', fontSize: 14, fontWeight: 500, maxWidth: 280, lineHeight: 1.6 }}>
+        <p style={{ color: '#8E8E93', fontSize: 14, fontWeight: 500, maxWidth: 280, lineHeight: 1.6 }}>
           Showcasing our finest projects that blend art with strategy
         </p>
       </div>
@@ -179,8 +179,8 @@ function PortfolioCarousel({ projects }: { projects: any[] }) {
                 aspectRatio: '4/5',
                 borderRadius: 24,
                 marginBottom: 14,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-                border: '1px solid #f1f5f9',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.08)',
               }}
             >
               <img
@@ -231,7 +231,7 @@ function PortfolioCarousel({ projects }: { projects: any[] }) {
               </div>
             </div>
 
-            <h4 className="text-center" style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>{p.title}</h4>
+            <h4 className="text-center" style={{ fontSize: 20, fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>{p.title}</h4>
           </a>
         ))}
       </div>
@@ -247,7 +247,7 @@ function PortfolioCarousel({ projects }: { projects: any[] }) {
               width: activeIndex === i ? 24 : 8,
               height: 8,
               borderRadius: 100,
-              background: activeIndex === i ? '#D4AF37' : '#e2e8f0',
+              background: activeIndex === i ? '#FF9F0A' : 'rgba(255,255,255,0.15)',
               border: 'none',
               cursor: 'pointer',
             }}
@@ -261,13 +261,13 @@ function PortfolioCarousel({ projects }: { projects: any[] }) {
           href="/mobile/portfolio"
           className="inline-flex items-center gap-3 active:scale-[0.97] transition-all"
           style={{
-            background: '#0f172a',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
             color: '#fff',
             padding: '14px 28px',
             borderRadius: 100,
             fontWeight: 700,
             fontSize: 14,
-            boxShadow: '0 8px 24px rgba(15,23,42,0.2)',
           }}
         >
           View All Projects <ArrowRight size={16} />
@@ -305,43 +305,51 @@ export default function MobilePage() {
   if (!visibility) return null;
 
   return (
-    <div className="min-h-screen font-sans overflow-x-hidden" style={{ background: '#FAFBFC', color: '#0f172a' }}>
+    <div className="min-h-screen font-sans overflow-x-hidden relative" style={{ background: '#07080B', color: '#F5F5F7' }}>
+      {/* Dynamic Ambient Glassmorphic Orbs */}
+      <div className="absolute top-12 left-1/4 w-[300px] h-[300px] bg-gradient-to-br from-[#0071E3]/8 to-transparent rounded-full blur-[100px] pointer-events-none animate-pulse" />
+      <div className="absolute top-1/3 right-1/4 w-[280px] h-[280px] bg-gradient-to-br from-[#FF9F0A]/5 to-transparent rounded-full blur-[100px] pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="absolute bottom-1/4 left-1/10 w-[320px] h-[320px] bg-gradient-to-br from-[#30B0C7]/5 to-transparent rounded-full blur-[110px] pointer-events-none animate-pulse" style={{ animationDelay: '4s' }} />
 
       {/* ═══════════════════════════
           NAVBAR
       ═══════════════════════════ */}
       <nav
-        className="fixed top-0 left-0 right-0 z-[100] transition-all duration-400"
+        className="fixed z-[100] transition-all duration-400"
         style={{
+          top: scrolled ? '12px' : '16px',
+          left: '16px',
+          right: '16px',
           padding: '0',
-          background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          background: 'rgba(18, 20, 26, 0.7)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
           boxShadow: scrolled
-            ? '0 1px 0 rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.06)'
-            : '0 1px 0 rgba(0,0,0,0.04)',
-          borderBottom: '1px solid rgba(0,0,0,0.05)',
+            ? '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+            : '0 4px 16px 0 rgba(0, 0, 0, 0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '20px',
         }}
       >
         <div
           className="flex justify-between items-center"
-          style={{ padding: '14px 20px' }}
+          style={{ padding: '12px 18px' }}
         >
           <div className="flex items-center gap-2.5">
             <div style={{
               width: 34,
               height: 34,
               borderRadius: 10,
-              background: '#f1f5f9',
+              background: 'rgba(255, 255, 255, 0.06)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               padding: 5,
-              border: '1px solid #e2e8f0',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
             }}>
               <img src="/logo.png" alt="CMA" className="w-full h-full object-contain" />
             </div>
-            <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: '-0.03em', color: '#0f172a' }}>CMA</span>
+            <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: '-0.03em', color: '#FFFFFF' }}>CMA</span>
           </div>
 
           <button
@@ -349,17 +357,17 @@ export default function MobilePage() {
             className="flex items-center justify-center active:scale-90 transition-transform"
             aria-label="Toggle Menu"
             style={{
-              width: 40,
-              height: 40,
+              width: 38,
+              height: 38,
               borderRadius: 12,
-              background: '#f1f5f9',
-              border: '1px solid #e2e8f0',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
             }}
           >
             <div className="flex flex-col gap-[5px]">
-              <span className={`block w-[18px] h-[2.5px] rounded-full transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-[7.5px]' : ''}`} style={{ background: menuOpen ? '#D4AF37' : '#334155' }} />
-              <span className={`block w-[18px] h-[2.5px] rounded-full transition-all duration-300 ${menuOpen ? 'opacity-0 scale-0' : ''}`} style={{ background: '#334155' }} />
-              <span className={`block w-[18px] h-[2.5px] rounded-full transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-[7.5px]' : ''}`} style={{ background: menuOpen ? '#D4AF37' : '#334155' }} />
+              <span className={`block w-[18px] h-[2.5px] rounded-full transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-[7.5px]' : ''}`} style={{ background: menuOpen ? '#FF9F0A' : '#FFFFFF' }} />
+              <span className={`block w-[18px] h-[2.5px] rounded-full transition-all duration-300 ${menuOpen ? 'opacity-0 scale-0' : ''}`} style={{ background: '#FFFFFF' }} />
+              <span className={`block w-[18px] h-[2.5px] rounded-full transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-[7.5px]' : ''}`} style={{ background: menuOpen ? '#FF9F0A' : '#FFFFFF' }} />
             </div>
           </button>
         </div>
@@ -376,8 +384,11 @@ export default function MobilePage() {
       <div
         className={`fixed top-0 right-0 h-full w-[300px] z-[200] transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{
-          background: 'linear-gradient(180deg, #0c1222 0%, #080d17 100%)',
-          boxShadow: '-20px 0 60px rgba(0,0,0,0.4)',
+          background: 'rgba(7, 8, 11, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
         }}
       >
         {/* Header */}
@@ -446,9 +457,9 @@ export default function MobilePage() {
                   width: 38,
                   height: 38,
                   borderRadius: 11,
-                  background: 'rgba(212,175,55,0.08)',
-                  border: '1px solid rgba(212,175,55,0.12)',
-                  color: '#D4AF37',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: '#FF9F0A',
                   flexShrink: 0,
                 }}
               >
@@ -505,22 +516,22 @@ export default function MobilePage() {
           HERO SECTION
       ═══════════════════════════ */}
       {visibility.hero !== false && (
-        <section className="relative overflow-hidden" style={{ padding: '120px 24px 60px' }}>
+        <section className="relative overflow-hidden" style={{ padding: '140px 24px 60px' }}>
           {/* Decorative gradient orbs */}
-          <div className="absolute top-8 -left-16 w-64 h-64 rounded-full animate-pulse pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)' }} />
-          <div className="absolute top-32 -right-16 w-72 h-72 rounded-full animate-pulse pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%)', animationDelay: '1.5s' }} />
+          <div className="absolute top-8 -left-16 w-64 h-64 rounded-full animate-pulse pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,113,227,0.1) 0%, transparent 70%)' }} />
+          <div className="absolute top-32 -right-16 w-72 h-72 rounded-full animate-pulse pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,159,10,0.08) 0%, transparent 70%)', animationDelay: '1.5s' }} />
 
           <div className="relative z-10 flex flex-col items-center text-center">
             <Reveal>
               <div
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
                 style={{
-                  background: 'rgba(212,175,55,0.08)',
-                  border: '1px solid rgba(212,175,55,0.15)',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                 }}
               >
-                <Sparkles size={13} style={{ color: '#D4AF37' }} />
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#94a3b8' }}>The Gold Standard Agency</span>
+                <Sparkles size={13} style={{ color: '#FF9F0A' }} />
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FF9F0A' }}>The Gold Standard Agency</span>
               </div>
             </Reveal>
 
@@ -530,12 +541,12 @@ export default function MobilePage() {
                 fontWeight: 900,
                 lineHeight: 0.95,
                 letterSpacing: '-0.04em',
-                color: '#0f172a',
+                color: '#FFFFFF',
                 marginBottom: 20,
               }}>
                 Design <br />
                 <span style={{
-                  background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #8E8E93 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}>
@@ -543,7 +554,7 @@ export default function MobilePage() {
                 </span>
                 <br />
                 <span className="inline-flex items-center gap-3 justify-center" style={{ marginTop: 4 }}>
-                  <span style={{ color: '#D4AF37', fontStyle: 'italic', fontFamily: 'Georgia, serif', fontSize: '2.2rem', fontWeight: 400 }}>with</span>
+                  <span style={{ color: '#FF9F0A', fontStyle: 'italic', fontFamily: 'Georgia, serif', fontSize: '2.2rem', fontWeight: 400 }}>with</span>
                   <span>CMA</span>
                 </span>
               </h1>
@@ -551,14 +562,14 @@ export default function MobilePage() {
 
             <Reveal delay={0.2}>
               <p style={{
-                color: '#64748b',
+                color: '#8E8E93',
                 fontSize: 16,
                 lineHeight: 1.7,
                 maxWidth: 320,
                 marginBottom: 28,
                 fontWeight: 500,
               }}>
-                We don't just market; we build <span style={{ color: '#0f172a', fontWeight: 700, textDecoration: 'underline', textDecorationColor: 'rgba(212,175,55,0.4)', textUnderlineOffset: 5 }}>legacies</span> for brands that dare to lead.
+                We don't just market; we build <span style={{ color: '#FFFFFF', fontWeight: 700, textDecoration: 'underline', textDecorationColor: 'rgba(255,159,10,0.4)', textUnderlineOffset: 5 }}>legacies</span> for brands that dare to lead.
               </p>
             </Reveal>
 
@@ -570,15 +581,15 @@ export default function MobilePage() {
                   width: '100%',
                   maxWidth: 300,
                   padding: '18px 32px',
-                  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                  background: 'linear-gradient(135deg, #0071E3 0%, #005bb5 100%)',
                   color: '#fff',
                   borderRadius: 20,
                   fontWeight: 800,
                   fontSize: 16,
-                  boxShadow: '0 12px 40px rgba(15,23,42,0.25)',
+                  boxShadow: '0 12px 30px rgba(0, 113, 227, 0.3)',
                 }}
               >
-                Ignite Growth <ArrowRight size={18} style={{ color: '#D4AF37' }} />
+                Ignite Growth <ArrowRight size={18} style={{ color: '#FF9F0A' }} />
               </a>
             </Reveal>
           </div>
@@ -589,17 +600,17 @@ export default function MobilePage() {
           BRANDS MARQUEE
       ═══════════════════════════ */}
       {visibility.brands !== false && dynamicBrands.length > 0 && (
-        <section style={{ padding: '32px 0', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9', background: '#fff' }}>
+        <section style={{ padding: '32px 0', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'transparent' }}>
           <Reveal>
             <div className="text-center" style={{ marginBottom: 20, padding: '0 24px' }}>
-              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 6 }}>Trusted Partners</p>
-              <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>Brands We Worked With</h2>
+              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#FF9F0A', marginBottom: 6 }}>Trusted Partners</p>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>Brands We Worked With</h2>
             </div>
           </Reveal>
 
           <div className="flex animate-marquee gap-16 whitespace-nowrap" style={{ paddingTop: 8 }}>
             {[...dynamicBrands, ...dynamicBrands].map((brand, i) => (
-              <div key={i} className="flex items-center justify-center" style={{ opacity: 0.4, filter: 'grayscale(100%)', transition: 'all 0.5s' }}>
+              <div key={i} className="flex items-center justify-center" style={{ opacity: 0.6, filter: 'invert(1) brightness(2) grayscale(100%)', transition: 'all 0.5s' }}>
                 <img src={brand.image} alt={brand.name} className="h-14 w-auto object-contain" />
               </div>
             ))}
@@ -610,7 +621,7 @@ export default function MobilePage() {
       {/* ═══════════════════════════
           STATS SECTION
       ═══════════════════════════ */}
-      <section style={{ padding: '48px 20px', background: '#f8fafc' }}>
+      <section style={{ padding: '48px 20px', background: 'transparent' }}>
         <Reveal>
           <div className="grid grid-cols-3 gap-3" style={{ maxWidth: 420, margin: '0 auto' }}>
             {stats.map((stat, i) => (
@@ -618,11 +629,12 @@ export default function MobilePage() {
                 key={i}
                 className="flex flex-col items-center text-center"
                 style={{
-                  background: '#fff',
+                  background: 'rgba(255, 255, 255, 0.03)',
                   padding: '20px 8px',
                   borderRadius: 20,
-                  border: '1px solid #f1f5f9',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
                 }}
               >
                 <div
@@ -631,15 +643,16 @@ export default function MobilePage() {
                     width: 36,
                     height: 36,
                     borderRadius: 12,
-                    background: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%)',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     marginBottom: 10,
-                    color: '#D4AF37',
+                    color: '#FF9F0A',
                   }}
                 >
                   {stat.icon}
                 </div>
-                <h4 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', lineHeight: 1, marginBottom: 4 }}>{stat.value}</h4>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#94a3b8' }}>{stat.label}</p>
+                <h4 style={{ fontSize: 24, fontWeight: 900, color: '#FFFFFF', lineHeight: 1, marginBottom: 4 }}>{stat.value}</h4>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#8E8E93' }}>{stat.label}</p>
               </div>
             ))}
           </div>
@@ -650,21 +663,21 @@ export default function MobilePage() {
           SERVICES SECTION
       ═══════════════════════════ */}
       {visibility.services !== false && (
-        <section id="services" className="relative overflow-hidden" style={{ padding: '56px 20px', background: '#fff' }}>
+        <section id="services" className="relative overflow-hidden" style={{ padding: '56px 20px', background: 'transparent' }}>
           {/* Subtle background decoration */}
-          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.03) 0%, transparent 70%)' }} />
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(0,113,227,0.04) 0%, transparent 70%)' }} />
 
           <Reveal>
             <div className="text-center relative z-10" style={{ marginBottom: 32 }}>
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mx-auto"
-                style={{ background: '#f8fafc', border: '1px solid #f1f5f9', marginBottom: 12 }}
+                style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: 12 }}
               >
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#D4AF37' }}>Our Services</span>
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#FF9F0A' }}>Our Services</span>
               </div>
-              <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#0f172a' }}>
+              <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#FFFFFF' }}>
                 Elite solutions for <br />
-                <span style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif', color: '#D4AF37', fontWeight: 400 }}>modern</span> brands.
+                <span style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif', color: '#FF9F0A', fontWeight: 400 }}>modern</span> brands.
               </h2>
             </div>
           </Reveal>
@@ -675,13 +688,15 @@ export default function MobilePage() {
                 <div
                   className="group active:scale-[0.98] transition-all"
                   style={{
-                    background: '#fafbfc',
-                    border: '1px solid #f1f5f9',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
                     borderRadius: 24,
                     padding: '24px',
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: 16,
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
                   }}
                 >
                   <div
@@ -690,19 +705,18 @@ export default function MobilePage() {
                       width: 48,
                       height: 48,
                       borderRadius: 16,
-                      background: '#fff',
-                      border: '1px solid #f1f5f9',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
                     }}
                   >
-                    {ServiceIcons[s.iconType] || <Code size={22} style={{ color: '#D4AF37' }} />}
+                    {ServiceIcons[s.iconType] || <Code size={22} style={{ color: '#FF9F0A' }} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', marginBottom: 4, lineHeight: 1.3 }}>{s.title}</h3>
-                    <p style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500, marginBottom: 10 }}>{s.count}</p>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: '#FFFFFF', marginBottom: 4, lineHeight: 1.3 }}>{s.title}</h3>
+                    <p style={{ fontSize: 13, color: '#8E8E93', fontWeight: 500, marginBottom: 10 }}>{s.count}</p>
                     <div
                       className="inline-flex items-center gap-1.5 cursor-pointer"
-                      style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#D4AF37' }}
+                      style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#FF9F0A' }}
                     >
                       Learn More <ArrowRight size={13} />
                     </div>
@@ -725,20 +739,20 @@ export default function MobilePage() {
           TESTIMONIALS SECTION
       ═══════════════════════════ */}
       {visibility.testimonials !== false && dynamicTestimonials.length > 0 && (
-        <section id="testimonials" className="relative overflow-hidden" style={{ padding: '56px 20px', background: '#fff' }}>
+        <section id="testimonials" className="relative overflow-hidden" style={{ padding: '56px 20px', background: 'transparent' }}>
           {/* Subtle decorations */}
-          <div className="absolute top-10 left-4 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%)' }} />
-          <div className="absolute bottom-10 right-4 w-52 h-52 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.04) 0%, transparent 70%)' }} />
+          <div className="absolute top-10 left-4 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,159,10,0.05) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-10 right-4 w-52 h-52 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,113,227,0.04) 0%, transparent 70%)' }} />
 
           <Reveal>
             <div className="text-center relative z-10" style={{ marginBottom: 28 }}>
-              <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#D4AF37', marginBottom: 8 }}>
+              <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#FF9F0A', marginBottom: 8 }}>
                 Success Stories
               </span>
-              <h2 style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.15, color: '#0f172a', marginBottom: 8, letterSpacing: '-0.02em' }}>
+              <h2 style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.15, color: '#FFFFFF', marginBottom: 8, letterSpacing: '-0.02em' }}>
                 What Our Clients Say
               </h2>
-              <p style={{ color: '#94a3b8', fontSize: 14, maxWidth: 260, margin: '0 auto', lineHeight: 1.5 }}>
+              <p style={{ color: '#8E8E93', fontSize: 14, maxWidth: 260, margin: '0 auto', lineHeight: 1.5 }}>
                 Real feedback from clients we helped achieve results
               </p>
             </div>
@@ -749,27 +763,29 @@ export default function MobilePage() {
               <Reveal key={i} delay={i * 0.1}>
                 <div
                   style={{
-                    background: 'linear-gradient(135deg, #fafbfc 0%, #f8f9fb 100%)',
+                    background: 'rgba(255, 255, 255, 0.03)',
                     padding: 24,
                     borderRadius: 24,
-                    border: '1px solid #f1f5f9',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
                     position: 'relative',
                   }}
                 >
                   {/* Quote decoration */}
-                  <div style={{ position: 'absolute', top: 16, right: 20, opacity: 0.06 }}>
+                  <div style={{ position: 'absolute', top: 16, right: 20, opacity: 0.1, color: '#FF9F0A' }}>
                     <Quote size={40} />
                   </div>
 
                   {/* Stars */}
                   <div className="flex gap-1" style={{ marginBottom: 14 }}>
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} size={14} fill="#D4AF37" color="#D4AF37" />
+                      <Star key={star} size={14} fill="#FF9F0A" color="#FF9F0A" />
                     ))}
                   </div>
 
                   {/* Quote text */}
-                  <p style={{ color: '#475569', fontSize: 15, lineHeight: 1.7, marginBottom: 18 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 15, lineHeight: 1.7, marginBottom: 18 }}>
                     "{t.quote}"
                   </p>
 
@@ -781,16 +797,16 @@ export default function MobilePage() {
                         height: 44,
                         borderRadius: 14,
                         overflow: 'hidden',
-                        border: '2px solid #fff',
-                        boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-                        background: '#e2e8f0',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                        background: 'rgba(255,255,255,0.05)',
                       }}
                     >
                       <img src={t.image || '/avatar-placeholder.png'} alt={t.author} className="w-full h-full object-cover" />
                     </div>
                     <div>
-                      <h5 style={{ fontWeight: 800, fontSize: 14, color: '#0f172a' }}>{t.author}</h5>
-                      <p style={{ color: '#94a3b8', fontSize: 12, fontWeight: 500 }}>{t.role}</p>
+                      <h5 style={{ fontWeight: 800, fontSize: 14, color: '#FFFFFF' }}>{t.author}</h5>
+                      <p style={{ color: '#8E8E93', fontSize: 12, fontWeight: 500 }}>{t.role}</p>
                     </div>
                   </div>
                 </div>
@@ -804,20 +820,20 @@ export default function MobilePage() {
           TEAM SECTION
       ═══════════════════════════ */}
       {visibility.team !== false && dynamicTeam.length > 0 && (
-        <section id="team" style={{ padding: '56px 20px', background: '#f8fafc' }}>
+        <section id="team" style={{ padding: '56px 20px', background: 'transparent' }}>
           <Reveal>
             <div className="text-center" style={{ marginBottom: 32 }}>
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mx-auto"
-                style={{ background: '#fff', border: '1px solid #f1f5f9', marginBottom: 12 }}
+                style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: 12 }}
               >
-                <Users size={12} style={{ color: '#D4AF37' }} />
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#94a3b8' }}>Meet The Team</span>
+                <Users size={12} style={{ color: '#FF9F0A' }} />
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#8E8E93' }}>Meet The Team</span>
               </div>
-              <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', color: '#0f172a' }}>
+              <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.03em', color: '#FFFFFF' }}>
                 The minds <br />
                 <span style={{
-                  background: 'linear-gradient(135deg, #0f172a 0%, #64748b 100%)',
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #8E8E93 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}>behind elite</span> designs.
@@ -835,21 +851,21 @@ export default function MobilePage() {
                       aspectRatio: '1/1',
                       borderRadius: 24,
                       marginBottom: 12,
-                      boxShadow: '0 6px 24px rgba(0,0,0,0.06)',
-                      border: '4px solid #fff',
-                      backgroundColor: member.bgColor || '#F5F5F5',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      backgroundColor: member.bgColor || 'rgba(255,255,255,0.03)',
                     }}
                   >
                     <img
                       src={member.image || '/team-placeholder.png'}
                       alt={member.name}
                       className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-                      style={{ filter: 'grayscale(30%)' }}
+                      style={{ filter: 'grayscale(15%)' }}
                     />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.15) 100%)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4) 100%)' }} />
                   </div>
-                  <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', marginBottom: 2, textAlign: 'center' }}>{member.name}</h4>
-                  <p style={{ color: '#D4AF37', fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', textAlign: 'center' }}>{member.role}</p>
+                  <h4 style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF', marginBottom: 2, textAlign: 'center' }}>{member.name}</h4>
+                  <p style={{ color: '#FF9F0A', fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', textAlign: 'center' }}>{member.role}</p>
                 </div>
               </Reveal>
             ))}
@@ -861,19 +877,19 @@ export default function MobilePage() {
           BLOG SECTION
       ═══════════════════════════ */}
       {visibility.blog !== false && dynamicPosts.length > 0 && (
-        <section id="blog" style={{ padding: '56px 20px', background: '#fff' }}>
+        <section id="blog" style={{ padding: '56px 20px', background: 'transparent' }}>
           <Reveal>
             <div className="text-center" style={{ marginBottom: 32 }}>
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mx-auto"
-                style={{ background: '#f8fafc', border: '1px solid #f1f5f9', marginBottom: 12 }}
+                style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: 12 }}
               >
-                <Calendar size={12} style={{ color: '#D4AF37' }} />
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#0f172a' }}>Daily Insights</span>
+                <Calendar size={12} style={{ color: '#FF9F0A' }} />
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#8E8E93' }}>Daily Insights</span>
               </div>
-              <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#0f172a' }}>
+              <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#FFFFFF' }}>
                 Fuel your <br />
-                <span style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif', color: '#D4AF37', fontWeight: 400 }}>digital</span> wisdom.
+                <span style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif', color: '#FF9F0A', fontWeight: 400 }}>digital</span> wisdom.
               </h2>
             </div>
           </Reveal>
@@ -884,11 +900,13 @@ export default function MobilePage() {
                 <div
                   className="group cursor-pointer active:scale-[0.98] transition-all"
                   style={{
-                    background: '#fafbfc',
+                    background: 'rgba(255, 255, 255, 0.03)',
                     borderRadius: 24,
                     overflow: 'hidden',
-                    border: '1px solid #f1f5f9',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
                   }}
                 >
                   {/* Thumbnail */}
@@ -903,26 +921,27 @@ export default function MobilePage() {
                       style={{
                         top: 12,
                         left: 12,
-                        background: 'rgba(255,255,255,0.92)',
+                        background: 'rgba(7, 8, 11, 0.8)',
                         backdropFilter: 'blur(8px)',
                         padding: '5px 12px',
                         borderRadius: 100,
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
                       }}
                     >
-                      <Clock size={11} style={{ color: '#D4AF37' }} />
-                      <span style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', textTransform: 'uppercase' }}>{post.readTime}</span>
+                      <Clock size={11} style={{ color: '#FF9F0A' }} />
+                      <span style={{ fontSize: 10, fontWeight: 800, color: '#FFFFFF', textTransform: 'uppercase' }}>{post.readTime}</span>
                     </div>
                   </div>
 
                   {/* Content */}
                   <div style={{ padding: '18px 20px 20px' }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', marginBottom: 6, lineHeight: 1.3, letterSpacing: '-0.01em' }}>{post.title}</h3>
-                    <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 500, lineHeight: 1.5, marginBottom: 14, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <h3 style={{ fontSize: 17, fontWeight: 800, color: '#FFFFFF', marginBottom: 6, lineHeight: 1.3, letterSpacing: '-0.01em' }}>{post.title}</h3>
+                    <p style={{ color: '#8E8E93', fontSize: 13, fontWeight: 500, lineHeight: 1.5, marginBottom: 14, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {post.excerpt}
                     </p>
                     <div
                       className="inline-flex items-center gap-2 cursor-pointer"
-                      style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#D4AF37' }}
+                      style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#FF9F0A' }}
                     >
                       Read Article <ArrowRight size={13} />
                     </div>
@@ -940,7 +959,8 @@ export default function MobilePage() {
       <footer
         className="relative overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, #0c1222 0%, #0a0f1a 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, #07080B 100%)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.06)',
           color: '#fff',
           padding: '48px 24px 28px',
           marginTop: 0,

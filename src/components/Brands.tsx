@@ -27,14 +27,14 @@ export default function Brands({ brands = [] }: BrandsProps) {
             image: b.imageUrl || b.image
         }));
     return (
-        <section className="py-20 lg:py-32 bg-white relative overflow-hidden section-wrapper">
+        <section className="py-20 lg:py-32 bg-transparent relative overflow-hidden section-wrapper">
             {/* Geometric Background Shape - Subtle */}
             <GeometricBackground pattern="circles" position="left" opacity={0.03} color="#000" />
 
             <ScrollReveal className="site-container relative z-10">
                 <div className="text-center mb-16">
-                    <h5 className="scroll-visible animate-fade-in-up text-sm font-bold tracking-[0.2em] uppercase mb-4 text-[#D4AF37]">TRUSTED PARTNERS</h5>
-                    <h2 className="scroll-visible animate-fade-in-up delay-200 text-4xl md:text-5xl lg:text-6xl font-bold text-[#010205] leading-tight">
+                    <h5 className="scroll-visible animate-fade-in-up text-sm font-bold tracking-[0.2em] uppercase mb-4 text-[var(--md-sys-color-tertiary)]">TRUSTED PARTNERS</h5>
+                    <h2 className="scroll-visible animate-fade-in-up delay-200 text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--md-sys-color-on-background)] leading-tight">
                         Brands We Worked With
                     </h2>
                 </div>

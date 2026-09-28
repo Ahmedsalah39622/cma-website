@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
 @import "tailwindcss";
 
 @keyframes marquee {
@@ -11,6 +11,42 @@
   }
 }
 
+@keyframes float-orb-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes float-orb-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(-40px, 40px) scale(0.9);
+  }
+
+  66% {
+    transform: translate(30px, -20px) scale(1.15);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
 .animate-marquee {
   animation: marquee 40s linear infinite;
 }
@@ -20,7 +56,7 @@
 }
 
 @keyframes shimmer {
-  100% {
+  100 {
     transform: translateX(100%);
   }
 }
@@ -79,82 +115,156 @@
 }
 
 :root {
-  /* Boostim Design System */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #FFFFFF;
-  --bg-dark: #010205;
-  --bg-dark-alt: #020609;
+  /* Google Material Design 3 (M3) + Apple Human Interface Guidelines (HIG) Hybrid Palette - Dark Mode Obsidian Slate */
+  --md-sys-color-primary: #0071E3;
+  /* Apple Blue */
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: rgba(0, 113, 227, 0.12);
+  /* Apple Translucent Glass Blue */
+  --md-sys-color-on-primary-container: #C2E7FF;
 
-  --text-primary: #010205;
-  --text-secondary: #878C91;
-  --text-muted: #5C5D5F;
+  --md-sys-color-secondary: #30B0C7;
+  /* Apple HIG Teal/Cyan Mint */
+  --md-sys-color-on-secondary: #002025;
+  --md-sys-color-secondary-container: rgba(48, 176, 199, 0.12);
+  --md-sys-color-on-secondary-container: #E0F7FA;
+
+  --md-sys-color-tertiary: #FF9F0A;
+  /* Apple HIG Amber/Gold */
+  --md-sys-color-on-tertiary: #2D1600;
+  --md-sys-color-tertiary-container: rgba(255, 159, 10, 0.12);
+  --md-sys-color-on-tertiary-container: #FFECC8;
+
+  --md-sys-color-error: #FF453A;
+  /* Apple Red */
+  --md-sys-color-on-error: #410002;
+  --md-sys-color-error-container: rgba(255, 69, 58, 0.12);
+  --md-sys-color-on-error-container: #FFD6D4;
+
+  --md-sys-color-background: #07080B;
+  /* Extremely Premium Slate Dark Obsidian */
+  --md-sys-color-on-background: #F5F5F7;
+  /* Apple HIG light body text */
+
+  --md-sys-color-surface: rgba(18, 20, 26, 0.65);
+  /* Apple Glassmorphic Regular Material */
+  --md-sys-color-on-surface: #F5F5F7;
+  --md-sys-color-surface-variant: rgba(255, 255, 255, 0.04);
+  /* Apple Glassmorphic Ultra-Thin Material */
+  --md-sys-color-on-surface-variant: #8E8E93;
+  /* Secondary subtext */
+
+  --md-sys-color-outline: rgba(255, 255, 255, 0.15);
+  /* Apple delicate borders */
+  --md-sys-color-outline-variant: rgba(255, 255, 255, 0.08);
+  /* Subtle glass dividers */
+
+  /* Spring transitions mapping (Apple Standard) */
+  --transition-spring: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-spring-slow: all 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Boostim legacy mappings (retained for backward compatibility) */
+  --bg-primary: var(--md-sys-color-background);
+  --bg-secondary: var(--md-sys-color-background);
+  --bg-dark: #07080B;
+  --bg-dark-alt: #030406;
+
+  --text-primary: var(--md-sys-color-on-background);
+  --text-secondary: var(--md-sys-color-on-surface-variant);
+  --text-muted: #8E8E93;
   --text-white: #FFFFFF;
 
-  /* Accent Colors */
-  --accent-gold: #D4AF37;
-  --accent-gold-dark: #B8860B;
-  --accent-gold-light: #FFD700;
-  --accent-gold-medium: #E6C35C;
-  --accent-blue: #45A7DE;
-  --accent-orange: #EA5F38;
-  --accent-purple: #6A26F1;
+  --accent-gold: var(--md-sys-color-tertiary);
+  --accent-gold-dark: #BF7200;
+  --accent-gold-light: #FFD60A;
+  /* Google/Apple Gold accent */
+  --accent-gold-medium: #FF9F0A;
+  --accent-blue: var(--md-sys-color-primary);
+  --accent-orange: #FF453A;
+  --accent-purple: #BF5AF2;
 
-  /* Marble & Gold Theme */
-  --cma-midnight: #020B1C;
-  --cma-royal: #183B73;
-  --cma-lavender: #A5B3CE;
-  --cma-mist: #E6EBF5;
-  --cma-gold: #FFB800;
-  --cma-gold-classic: #D4AF37;
+  --cma-midnight: #07080B;
+  --cma-royal: #0071E3;
+  --cma-lavender: #D4E2FF;
+  --cma-mist: #1C1C1E;
+  --cma-gold: #FF9F0A;
+  --cma-gold-classic: #FFD60A;
 
-  /* Layout */
+  /* Material Design 3 Shape System */
+  --md-shape-corner-none: 0px;
+  --md-shape-corner-extra-small: 4px;
+  --md-shape-corner-small: 8px;
+  --md-shape-corner-medium: 12px;
+  --md-shape-corner-large: 16px;
+  --md-shape-corner-extra-large: 24px;
+  /* Standard for M3 Cards - 24px in Google style */
+  --md-shape-corner-full: 9999px;
+  /* Standard for M3 Buttons / Chips */
+
+  /* Material Design 3 Elevation System (Shadows) */
+  --md-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+  --md-elevation-4: 0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px 0px rgba(0, 0, 0, 0.3);
+  --md-elevation-5: 0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px 0px rgba(0, 0, 0, 0.3);
+
+  /* Layout and legacy metrics */
   --max-width: 1280px;
-  --border-radius: 30px;
-  --border-radius-sm: 20px;
-  --border-radius-full: 70px;
+  --border-radius: var(--md-shape-corner-extra-large);
+  --border-radius-sm: var(--md-shape-corner-medium);
+  --border-radius-full: var(--md-shape-corner-full);
 
-  /* Layout spacing */
-  --section-gap: 5rem;
-  /* default gap between sections (increased) */
-  --section-gap-lg: 8rem;
-  /* larger gap on wide screens */
-  --section-gap-sm: 3rem;
-  /* slightly larger on small screens */
-  --section-gap-xl: 10rem;
-  /* extra-large gap for big offsets */
+  --section-gap: 4rem;
+  --section-gap-lg: 6rem;
+  --section-gap-sm: 2.5rem;
+  --section-gap-xl: 8rem;
 
-  /* Header & hero spacing */
-  --header-height: 72px;
-  /* fixed header height offset */
-  --header-height-lg: 96px;
-  /* larger header on wide screens */
-  --hero-gap: 3rem;
-  /* increased gap between header and hero */
-  --hero-gap-lg: 5rem;
-  /* increased larger gap on wide screens */
+  --header-height: 64px;
+  /* Google top bar standard is 64px */
+  --header-height-lg: 64px;
+  --hero-gap: 2rem;
+  --hero-gap-lg: 3rem;
 
-  /* Button system */
-  --btn-radius: 9999px;
-  --btn-padding-y: 14px;
-  --btn-padding-x: 28px;
-  --btn-font-weight: 800;
-  --btn-gradient-start: #4A5568;
-  --btn-gradient-end: #718096;
-  /* sophisticated grey */
-  --btn-gradient-start-gold: #FFD700;
-  --btn-gradient-end-gold: #B8860B;
-  --btn-shadow: 0 12px 30px rgba(74, 85, 104, 0.15);
-  --btn-text-color: #ffffff;
+  --btn-radius: var(--md-shape-corner-full);
+  --btn-padding-y: 10px;
+  --btn-padding-x: 20px;
+  --btn-font-weight: 500;
+  --btn-gradient-start: var(--md-sys-color-primary);
+  --btn-gradient-end: var(--md-sys-color-primary);
+  --btn-gradient-start-gold: #FF9F0A;
+  --btn-gradient-end-gold: #FF9F0A;
+  --btn-shadow: none;
+  --btn-text-color: var(--md-sys-color-on-primary);
 
-  /* Card spacing */
-  --card-padding: 32px;
-  --card-padding-sm: 20px;
+  --card-padding: 24px;
+  --card-padding-sm: 18px;
 }
 
 @theme inline {
-  --color-background: var(--bg-primary);
-  --color-foreground: var(--text-primary);
-  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --color-background: var(--md-sys-color-background);
+  --color-foreground: var(--md-sys-color-on-background);
+  --font-sans: 'Outfit', 'Roboto', sans-serif;
+  --font-roboto: 'Roboto', 'Outfit', sans-serif;
+
+  /* Material design theme colors */
+  --color-md-primary: var(--md-sys-color-primary);
+  --color-md-on-primary: var(--md-sys-color-on-primary);
+  --color-md-primary-container: var(--md-sys-color-primary-container);
+  --color-md-on-primary-container: var(--md-sys-color-on-primary-container);
+  --color-md-secondary: var(--md-sys-color-secondary);
+  --color-md-on-secondary: var(--md-sys-color-on-secondary);
+  --color-md-secondary-container: var(--md-sys-color-secondary-container);
+  --color-md-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --color-md-tertiary: var(--md-sys-color-tertiary);
+  --color-md-on-tertiary: var(--md-sys-color-on-tertiary);
+  --color-md-tertiary-container: var(--md-sys-color-tertiary-container);
+  --color-md-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --color-md-surface: var(--md-sys-color-surface);
+  --color-md-on-surface: var(--md-sys-color-on-surface);
+  --color-md-surface-variant: var(--md-sys-color-surface-variant);
+  --color-md-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --color-md-outline: var(--md-sys-color-outline);
 }
 
 * {
@@ -164,8 +274,8 @@
 }
 
 body {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
   font-family: 'Plus Jakarta Sans', sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -191,6 +301,25 @@ body {
   }
 }
 
+.page-container {
+  transition: padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: var(--header-height);
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    padding-top: var(--header-height-lg);
+  }
+
+  html.sidebar-expanded .page-container {
+    padding-left: 240px;
+  }
+
+  html.sidebar-collapsed .page-container {
+    padding-left: 72px;
+  }
+}
+
 /* Typography */
 h1,
 h2,
@@ -198,7 +327,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: var(--text-primary);
+  color: var(--md-sys-color-on-background);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.3;
@@ -307,96 +436,97 @@ h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: var(--btn-padding-y) var(--btn-padding-x);
-  font-family: 'Manrope', sans-serif;
-  font-weight: var(--btn-font-weight);
-  font-size: 16px;
-  border-radius: var(--btn-radius);
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--font-roboto);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.1px;
+  border-radius: var(--md-shape-corner-full);
   border: none;
   cursor: pointer;
-  transition: transform 220ms cubic-bezier(.2, .9, .2, 1), box-shadow 220ms ease, opacity 160ms ease;
-  will-change: transform, box-shadow;
+  transition: box-shadow 280ms cubic-bezier(0.2, 0, 0, 1), transform 280ms cubic-bezier(0.2, 0, 0, 1), background-color 280ms cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Primary - gradient, shadowed (purple default) */
+/* Material 3 Filled Button (Default Primary) */
 .btn-primary {
-  background-image: linear-gradient(90deg, var(--btn-gradient-start), var(--btn-gradient-end));
-  color: var(--btn-text-color);
-  box-shadow: var(--btn-shadow);
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: var(--md-elevation-1);
 }
 
 .btn-primary:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(74, 85, 104, 0.22);
+  background-color: #234E8F;
+  /* Shift tint slightly */
+  box-shadow: var(--md-elevation-2);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
-  transform: translateY(-1px) scale(0.995);
+  box-shadow: var(--md-elevation-1);
+  transform: translateY(0);
 }
 
-.btn-primary:focus-visible {
-  outline: 3px solid rgba(74, 85, 104, 0.15);
-  outline-offset: 3px;
-}
-
-/* Grey primary - header style */
+/* Material 3 Tonal Button (Blue variant) */
 .btn-blue {
-  background-image: linear-gradient(90deg, var(--btn-gradient-start), var(--btn-gradient-end));
-  color: var(--btn-text-color);
-  box-shadow: 0 10px 30px rgba(74, 85, 104, 0.18);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: none;
 }
 
 .btn-blue:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 40px rgba(74, 85, 104, 0.22);
+  background-color: #D3DEF2;
+  box-shadow: var(--md-elevation-1);
+  transform: translateY(-1px);
 }
 
 .btn-blue:active {
-  transform: translateY(-1px) scale(0.995);
+  box-shadow: none;
+  transform: translateY(0);
 }
 
-.btn-blue:focus-visible {
-  outline: 3px solid rgba(74, 85, 104, 0.15);
-  outline-offset: 3px;
-}
-
-/* Gold primary - alternative */
+/* Material 3 Elevated Button (Gold variant) */
 .btn-gold {
-  background-image: linear-gradient(90deg, var(--btn-gradient-start-gold), var(--btn-gradient-end-gold));
-  color: var(--text-primary);
-  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
-  animation: gold-shimmer 3s ease-in-out infinite;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--md-elevation-1);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  transition: all 280ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .btn-gold:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 40px rgba(212, 175, 55, 0.3);
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+  border-color: transparent;
+  box-shadow: var(--md-elevation-2);
+  transform: translateY(-2px);
 }
 
-/* Outline */
+/* Material 3 Outlined Button */
 .btn-outline {
-  background: transparent;
-  color: var(--btn-gradient-start);
-  border: 2px solid rgba(74, 85, 104, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(74, 85, 104, 0.05);
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
 }
 
 .btn-outline:hover {
-  background: linear-gradient(90deg, rgba(74, 85, 104, 0.1), rgba(113, 128, 150, 0.08));
-  color: #1a202c;
+  background-color: rgba(24, 59, 115, 0.08);
+  /* 8% State opacity */
+  border-color: var(--md-sys-color-primary);
 }
 
-/* White / light */
+/* Material 3 Tonal / Surface variant */
 .btn-white {
-  background: var(--text-white);
-  color: var(--text-primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) inset;
+  background-color: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  box-shadow: none;
 }
 
 .btn-white:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+  background-color: rgba(204, 214, 230, 0.5);
+  box-shadow: var(--md-elevation-1);
 }
 
 /* Ghost (subtle link-like) */
@@ -998,10 +1128,13 @@ h6 {
 }
 
 /* Card styles */
+/* Material Design 3 Card System */
 .card {
-  background: var(--bg-primary);
-  border-radius: var(--border-radius-sm);
+  background: var(--md-sys-color-surface);
+  border-radius: var(--md-shape-corner-extra-large);
   padding: var(--card-padding);
+  box-shadow: var(--md-elevation-1);
+  transition: box-shadow 280ms cubic-bezier(0.2, 0, 0, 1), transform 280ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 @media (max-width: 768px) {
@@ -1011,28 +1144,30 @@ h6 {
 }
 
 .card-dark {
-  background: var(--bg-dark);
-  border-radius: var(--border-radius);
+  background: var(--md-sys-color-secondary);
+  border-radius: var(--md-shape-corner-extra-large);
   position: relative;
   overflow: hidden;
-  color: var(--text-white);
+  color: var(--md-sys-color-on-secondary);
+  box-shadow: var(--md-elevation-2);
 }
 
 .card-glass {
-  background: rgba(240, 240, 240, 0.7);
-  backdrop-filter: blur(42px);
-  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--md-shape-corner-extra-large);
 }
 
 /* Card variants */
 .service-card {
-  background: linear-gradient(135deg, #f2f2f2 0%, #e6e6e6 100%);
-  border-radius: 30px;
+  background: var(--md-sys-color-surface-variant);
+  border-radius: var(--md-shape-corner-extra-large);
   padding: var(--card-padding);
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 0 12px 30px rgba(2, 6, 15, 0.04);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: none;
 }
 
 .service-card::before {
@@ -1054,7 +1189,7 @@ h6 {
   height: 54px;
   background: #010205;
   border-radius: 9999px;
-  border: 6px solid #FFFFFF;
+  border: 6px solid var(--md-sys-color-surface-variant);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1529,6 +1664,63 @@ textarea {
   font-family: inherit;
 }
 
+/* Material Design 3 Text Fields (Outlined & Filled) */
+.md-textfield {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+  display: block;
+}
+
+.md-textfield input,
+.md-textfield textarea {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-shape-corner-medium);
+  color: var(--md-sys-color-on-background);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  outline: none;
+  transition: border-color 280ms cubic-bezier(0.2, 0, 0, 1), box-shadow 280ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.md-textfield input:focus,
+.md-textfield textarea:focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+}
+
+.md-textfield label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--md-sys-color-surface);
+  padding: 0 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 15px;
+  font-weight: 500;
+  pointer-events: none;
+  transition: transform 280ms cubic-bezier(0.2, 0, 0, 1), font-size 280ms cubic-bezier(0.2, 0, 0, 1), color 280ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Adjust label vertical offset for textareas */
+.md-textfield textarea~label {
+  top: 24px;
+}
+
+.md-textfield input:focus~label,
+.md-textfield input:not(:placeholder-shown)~label,
+.md-textfield textarea:focus~label,
+.md-textfield textarea:not(:placeholder-shown)~label {
+  transform: translateY(-34px) scale(0.85);
+  transform-origin: left top;
+  color: var(--md-sys-color-primary);
+}
+
+
 /* ============================================
    MOBILE PAGE STYLES
    ============================================ */
@@ -1600,4 +1792,78 @@ textarea {
   display: flex;
   width: max-content;
   animation: marquee 30s linear infinite;
+}
+
+/* ============================================
+   APPLE HIG & M3 HYBRID UTILITIES
+   ============================================ */
+
+.glass-card {
+  background: rgba(18, 20, 26, 0.6);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.35);
+  transition: var(--transition-spring);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 48px 0 rgba(0, 0, 0, 0.45);
+  transform: translateY(-4px) scale(1.01);
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(140px);
+  opacity: 0.14;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.ambient-orb-blue {
+  background: radial-gradient(circle, #0071E3 0%, transparent 70%);
+  animation: float-orb-1 18s infinite alternate ease-in-out;
+}
+
+.ambient-orb-gold {
+  background: radial-gradient(circle, #FF9F0A 0%, transparent 70%);
+  animation: float-orb-2 22s infinite alternate ease-in-out;
+}
+
+.hover-glow-border {
+  position: relative;
+  transition: var(--transition-spring);
+}
+
+.hover-glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.05) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 1;
+  transition: var(--transition-spring);
+}
+
+.hover-glow-border:hover::after {
+  background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, transparent 50%, var(--md-sys-color-tertiary) 100%);
+  opacity: 1;
+}
+
+.magnetic-btn {
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.magnetic-btn:active {
+  transform: scale(0.96);
 }
